@@ -1,6 +1,9 @@
 import streamlit as st
+import random
 
 st.title("S402 Simulator")
+
+Data=["Smart","Aura","Ms Deana, We Don't Have Enough Time","Sings","Punches you","Stupid","Sigma","This Question Is So Stupid","Ms Deana Is The Math Test Tommorow"]
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -14,7 +17,8 @@ if prompt := st.chat_input("Say something:"):
     with st.chat_message("user"):
         st.markdown(prompt)
     
-    bot_response = "hi"
+    index=random.randint(1,len(Data))
+    bot_response = Data[index]
     
     with st.chat_message("assistant"):
         st.markdown(bot_response)
