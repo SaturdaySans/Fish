@@ -3,7 +3,8 @@ import random
 
 st.title("S402 Simulator")
 
-Data=["Smart","Aura","Ms Deana, We Don't Have Enough Time","Sings","Punches you","Stupid","Sigma","This Question Is So Stupid","Ms Deana Is The Math Test Tommorow"]
+Data=["Smart","Aura","Gyat","Fatty","Stupid","Sigma","This Question Is So Stupid","Shut up","No One Asked"]
+Class_List = ["a","b","c"]
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
