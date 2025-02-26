@@ -18,7 +18,7 @@ if prompt := st.chat_input("Say something:"):
         st.markdown(prompt)
     
     index=random.randint(1,len(Data))
-    bot_response = Data[index]
+    bot_response = Data[index-1]
     
     with st.chat_message("assistant"):
         st.markdown(bot_response)
