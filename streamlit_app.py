@@ -8,7 +8,7 @@ st.title("🐟 Fishing Simulator")
 # 💰 Bait Prices
 BaitPrices = {
     "Worm Bait": 10,
-    "Rock Bait": 15,
+    "Rock Bait": 5,      # Reduced price as requested
     "Salt Bait": 25,
     "Golden Bait": 50
 }
@@ -126,18 +126,22 @@ def handle_command(command):
     elif command == "/sell":
         if not st.session_state.inventory:
             return "Thou possesseth no fish to sell!"
+        level, _, _ = get_level_and_progress(st.session_state.experience)
+        sell_bonus = 1 + (level * 0.02)  # 2% per level
+
         total_earned = 0
         summary = "**You step into the market and sell thy bounty:**\n"
         for name, info in st.session_state.inventory.items():
             count = info["count"]
-            reward = next(f for f in FishPool if f["name"] == name)["reward"]
-            earned = reward * count
+            base_reward = next(f for f in FishPool if f["name"] == name)["reward"]
+            adjusted_reward = int(base_reward * sell_bonus)
+            earned = adjusted_reward * count
             total_earned += earned
             summary += f"- **{info['rarity']} {name}** × {count} → 💰 +{earned} Fincoins\n"
 
         st.session_state.money += total_earned
         st.session_state.inventory = {}
-        return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins!"
+        return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins! (Sell bonus: +{int((sell_bonus-1)*100)}%)"
 
     elif command == "/rod":
         rod = st.session_state.rod_level
@@ -169,7 +173,6 @@ def handle_command(command):
         )
 
         bait_data = "\n".join(f"- {r}: ×{mult}" for r, mult in bait_effect.items())
-
         baits_owned = "\n".join(f"- {bait}: {qty}" for bait, qty in st.session_state.bait_inventory.items())
 
         return (
@@ -183,9 +186,7 @@ def handle_command(command):
         )
 
     elif command == "/shop":
-        baits = "\n".join(
-            f"- {bait}: {qty}" for bait, qty in st.session_state.bait_inventory.items()
-        )
+        baits = "\n".join(f"- {bait}: {qty}" for bait, qty in st.session_state.bait_inventory.items())
         return (
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
             f"🧠 **Player Level:** {get_level_and_progress(st.session_state.experience)[0]}\n"
@@ -199,10 +200,11 @@ def handle_command(command):
         for fish in FishPool:
             name = fish["name"]
             rarity = fish["rarity"]
+            reward = fish["reward"]
             status = name if name in seen else "[Locked]"
-            data.append({"Rarity": rarity, "Name": status})
+            data.append({"Rarity": rarity, "Name": status, "Base Reward": reward})
         st.dataframe(data)
-        return "**Above is thy Fish Dictionary.**"
+        return "**Above is thy Fish Dictionary (with prices).**"
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
