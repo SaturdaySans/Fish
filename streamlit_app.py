@@ -63,7 +63,7 @@ def handle_command(command):
             "- `/fish` — Cast thy rod and tempt the deep\n"
             "- `/inventory` — View caught fish 🧺\n"
             "- `/sell` — Sell fish for Fincoins 💰\n"
-            "/money` — View thy wealth 💰\n"
+            "- `/money` — View thy wealth 💰\n"
             "- `/experience` — Check thy fishing level ✨\n"
             "- `/shop` — Upgrade rod / Buy bait / Change bait 🎣\n"
             "- `/rod` — Check fishing stats / Switch bait 🎯\n"
@@ -79,7 +79,6 @@ def handle_command(command):
         st.session_state.experience += 1
         st.session_state.bait -= 1
 
-        # 🎬 Delay based on rarity
         rarity = catch["rarity"]
         delay_map = {
             "Common": (0.5, 1.0),
@@ -91,7 +90,6 @@ def handle_command(command):
         }
         time.sleep(random.uniform(*delay_map[rarity]))
 
-        # 📦 Inventory update
         name = catch["name"]
         if name in st.session_state.inventory:
             st.session_state.inventory[name]["count"] += 1
@@ -144,7 +142,6 @@ def handle_command(command):
         bait = st.session_state.current_bait
         bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
 
-        # Calculate adjusted weights per rarity
         rarity_totals = {r: 0 for r in BaitEffects["Worm Bait"]}
         xp = st.session_state.experience
         level, _, _ = get_level_and_progress(xp)
@@ -174,6 +171,7 @@ def handle_command(command):
             if st.button(f"Switch to {bait_option}"):
                 st.session_state.current_bait = bait_option
                 st.success(f"🎣 You now use **{bait_option}**!")
+                st.rerun()
 
         bait_data = "\n".join(f"- {r}: ×{mult}" for r, mult in bait_effect.items())
 
@@ -193,15 +191,14 @@ def handle_command(command):
 
     elif command == "/dictionary":
         seen = st.session_state.dictionary
-        response = "**📖 Fish Discovered:**\n"
+        data = []
         for fish in FishPool:
             name = fish["name"]
             rarity = fish["rarity"]
-            if name in seen:
-                response += f"- **{rarity} {name}**\n"
-            else:
-                response += f"- **{rarity} [Locked]**\n"
-        return response
+            status = name if name in seen else "[Locked]"
+            data.append({"Rarity": rarity, "Name": status})
+        st.dataframe(data)
+        return "**Above is thy Fish Dictionary.**"
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
