@@ -15,7 +15,7 @@ FishPool = [
     {"name": "Sea Bass", "rarity": "Uncommon", "weight": 18, "reward": 9},
     {"name": "Golden Carp", "rarity": "Rare", "weight": 10, "reward": 20},
     {"name": "Electric Eel", "rarity": "Rare", "weight": 10, "reward": 22},
-    {"name": "Moon Jellyfish", "rarity": "Rare", "weight": 9, "reward": 18},
+    {"name": "Moon Jellyfish", "rarity": "Rare", "weight": 8, "reward": 18},
     {"name": "Swordfish", "rarity": "Epic", "weight": 5, "reward": 40},
     {"name": "Ornamental Koi", "rarity": "Epic", "weight": 4, "reward": 35},
     {"name": "Crystal Lionfish", "rarity": "Epic", "weight": 3, "reward": 50},
