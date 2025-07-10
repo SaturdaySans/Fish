@@ -1,9 +1,14 @@
 import streamlit as st
 import random
 
-st.title("S402 Simulator")
+st.title("Fishing Simulator")
 
-Data=["Smart","Aura","Gyat","Fatty","Stupid","Sigma","This Question Is So Stupid","Shut up","No One Asked"]
+Data=["Salmon", "Cod"]
+
+def fish():
+    Fish_Index = random.randint(1,2)
+    st.write(Data[Fish_Index])
+
 Class_List = ["a","b","c"]
 
 if "messages" not in st.session_state:
@@ -17,7 +22,7 @@ if prompt := st.chat_input("Say something:"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-    
+    fish()
     index=random.randint(1,len(Data))
     bot_response = Data[index-1]
     
