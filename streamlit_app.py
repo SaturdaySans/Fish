@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-st.title("🐟 Fishing Simulator - Slash & Button Edition")
+st.title("🐟 Fishing Simulator")
 
 FishData = ["Salmon", "Cod", "Tuna", "Golden Carp", "Ancient Leviathan Scale"]
 
@@ -34,7 +34,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # 💬 Handle chat input
-if prompt := st.chat_input("Enter a command like /fish or /help"):
+if prompt := st.chat_input("Enter a command"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
