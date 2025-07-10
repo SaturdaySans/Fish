@@ -186,6 +186,53 @@ def handle_command(command):
         st.session_state.inventory = {}
 
         return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins!"
+    
+    elif command == "/rod":
+        rod = st.session_state.rod_level
+        bait = st.session_state.current_bait
+        bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
+
+        # Calculate adjusted weights per rarity
+        rarity_totals = {"Common": 0, "Uncommon": 0, "Rare": 0, "Epic": 0, "Legendary": 0, "Mythical": 0}
+        xp = st.session_state.experience
+        level, _, _ = get_level_and_progress(xp)
+
+        for fish in FishPool:
+            rarity = fish["rarity"]
+            base = fish["weight"]
+            bonus = rod * 0.015
+            bait_bonus = bait_effect[rarity]
+            if rarity == "Common":
+                adj = base * max(1.0 - (level * 0.02 + rod * 0.03), 0.1) * bait_bonus
+            else:
+                scale = {
+                    "Uncommon": 0.01,
+                    "Rare": 0.02,
+                    "Epic": 0.025,
+                    "Legendary": 0.03,
+                    "Mythical": 0.04
+                }[rarity]
+                adj = base * (1.0 + level * scale + bonus) * bait_bonus
+            rarity_totals[rarity] += adj
+
+        total = sum(rarity_totals.values())
+
+        rarity_chances = ""
+        for rarity in ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"]:
+            chance = (rarity_totals[rarity] / total) * 100
+            rarity_chances += f"- **{rarity}**: {chance:.2f}%\n"
+
+        bait_data = ""
+        for r, mult in bait_effect.items():
+            bait_data += f"- {r}: ×{mult}\n"
+
+        return (
+            f"🎣 **Rod Level:** {rod}\n"
+            f"🧠 **Player Level:** {level}\n"
+            f"🪱 **Current Bait:** {bait}\n\n"
+            f"**🎯 Rarity Chances When Fishing:**\n{rarity_chances}\n"
+            f"**🔬 Bait Effects (× Weight Multiplier):**\n{bait_data}"
+        )
 
     elif command == "/shop":
         rod_cost = 50 * (st.session_state.rod_level + 1)
