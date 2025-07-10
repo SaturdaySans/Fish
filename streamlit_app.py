@@ -23,8 +23,8 @@ def handle_command(command):
         return (
             "**Available Commands:**\n"
             "- `/fish` — Cast your rod via command\n"
-            "- `/money` — Check your fortune 💰\n"
-            "- `/help` — Reveal the secrets of the abyss"
+            "- `/money` — Check thy treasure hoard 💰\n"
+            "- `/help` — Display this divine message again"
         )
 
     elif command == "/fish":
@@ -37,49 +37,29 @@ def handle_command(command):
         return f"Thy current treasury holds **{st.session_state.money} Fincoins**. 💰"
 
     else:
-        return "Unknown command. Type `/help` to see what thou canst do."
+        return "Unknown command. Type `/help` for guidance from above."
 
-# 🏦 Initialize session state
+# 🏦 Session State Initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "money" not in st.session_state:
     st.session_state.money = 0
 
-# 💬 Display all past messages
-for i, message in enumerate(st.session_state.messages):
+# 📜 Display chat history
+for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-    
-    # Add button only after the **last assistant message**
-    if i == len(st.session_state.messages) - 1 and message["role"] == "assistant":
-        if st.button("🎣 Fish Again", key=f"fish_button_{i}"):
-            catch = fish()
-            reward = FishRewards.get(catch, 0)
-            st.session_state.money += reward
 
-            user_msg = "🎣 Rod Casted"
-            response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 💰 +{reward} Fincoins!"
-
-            with st.chat_message("user"):
-                st.markdown(user_msg)
-
-            with st.chat_message("assistant"):
-                st.markdown(response)
-
-            st.session_state.messages.append({"role": "user", "content": user_msg})
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.experimental_rerun()  # Refresh immediately to insert button after new message
-
-# 👂 Handle chat input
-if prompt := st.chat_input("Enter a command:"):
+# ✉️ Handle slash command input
+if prompt := st.chat_input("Enter a command like /fish or /money"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    bot_response = handle_command(prompt)
+    response = handle_command(prompt)
 
     with st.chat_message("assistant"):
-        st.markdown(bot_response)
+        st.markdown(response)
 
-    st.session_state.messages.append({"role": "assistant", "content": bot_response})
+    st.session_state.messages.append({"role": "assistant", "content": response})
