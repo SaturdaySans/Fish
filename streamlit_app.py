@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+import time
 
 st.title("🐟 Fishing Simulator ")
 
@@ -76,13 +77,30 @@ def handle_command(command):
             "- `/sell` — Sell all thy fish for Fincoins 💰\n"
             "- `/money` — View thy coinage 💰\n"
             "- `/experience` — Behold thy accumulated wisdom ✨\n"
-            "- `/shop` — Upgrade your rod 🎣\n"
+            "- `/shop` — Upgrade rod / Buy bait 🎣\n"
             "- `/help` — This guide of holy waters"
         )
 
     elif command == "/fish":
+        if st.session_state.bait <= 0:
+            return "🪱 You have no bait! Visit the `/shop` to buy more."
+
         catch = go_fishing()
         st.session_state.experience += 1
+        st.session_state.bait -= 1
+
+        # 🕒 Delay based on rarity
+        rarity = catch["rarity"]
+        if rarity == "Common":
+            time.sleep(random.uniform(0.5, 1.0))
+        elif rarity == "Uncommon":
+            time.sleep(random.uniform(1.0, 1.5))
+        elif rarity == "Rare":
+            time.sleep(random.uniform(1.5, 2.0))
+        elif rarity == "Epic":
+            time.sleep(random.uniform(2.0, 2.5))
+        elif rarity == "Legendary":
+            time.sleep(random.uniform(2.5, 3.0))
 
         # Update Inventory
         name = catch["name"]
@@ -93,7 +111,7 @@ def handle_command(command):
 
         return (
             f"You cast your rod... and lo! You caught a **{catch['rarity']} {name}**! 🐟\n"
-            f"✨ +1 XP\n"
+            f"✨ +1 XP | 🪱 -1 Bait (Remaining: {st.session_state.bait})\n"
             f"(Sell it later using `/sell` to earn Fincoins!)"
         )
 
@@ -137,23 +155,36 @@ def handle_command(command):
         return summary
 
     elif command == "/shop":
-        cost = 50 * (st.session_state.rod_level + 1)
-        if st.button(f"Upgrade Rod (Lv.{st.session_state.rod_level}) → Lv.{st.session_state.rod_level + 1} for {cost} Fincoins"):
-            if st.session_state.money >= cost:
-                st.session_state.money -= cost
+        rod_cost = 50 * (st.session_state.rod_level + 1)
+        bait_cost = 10  # 10 Fincoins for 5 bait
+
+        if st.button(f"Upgrade Rod (Lv.{st.session_state.rod_level}) → Lv.{st.session_state.rod_level + 1} for {rod_cost} Fincoins"):
+            if st.session_state.money >= rod_cost:
+                st.session_state.money -= rod_cost
                 st.session_state.rod_level += 1
                 st.success(f"🔧 Rod upgraded to Level {st.session_state.rod_level}!")
             else:
                 st.error("Thou hath not enough Fincoins!")
 
+        if st.button(f"Buy 5 Bait for {bait_cost} Fincoins"):
+            if st.session_state.money >= bait_cost:
+                st.session_state.money -= bait_cost
+                st.session_state.bait += 5
+                st.success("🪱 Purchased 5 bait!")
+            else:
+                st.error("Not enough Fincoins for bait!")
+
         return (
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
-            f"💰 **Upgrade Cost:** {cost} Fincoins\n"
-            f"Each level increases your chances of catching rarer fish!"
+            f"🪱 **Bait:** {st.session_state.bait}\n"
+            f"💰 **Upgrade Cost:** {rod_cost} Fincoins\n"
+            f"💰 **Bait Cost:** {bait_cost} Fincoins (for 5)\n"
+            f"Rod upgrades help you catch rarer fish. Bait is required to fish!"
         )
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
+
 
 # 🌊 State Initialization
 if "messages" not in st.session_state:
@@ -170,6 +201,9 @@ if "inventory" not in st.session_state:
 
 if "rod_level" not in st.session_state:
     st.session_state.rod_level = 0
+
+if "bait" not in st.session_state:
+    st.session_state.bait = 10
 
 # 📜 Show Previous Messages
 for message in st.session_state.messages:
