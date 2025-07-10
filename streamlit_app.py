@@ -27,7 +27,7 @@ FishPool = [
 ]
 
 # 🎣 Weighted Random Fish
-def fish():
+def go_fishing():
     names = [f["name"] for f in FishPool]
     weights = [f["weight"] for f in FishPool]
     chosen_name = random.choices(names, weights=weights, k=1)[0]
@@ -50,7 +50,7 @@ def handle_command(command):
         )
 
     elif command == "/fish":
-        catch = fish()
+        catch = go_fishing()
         st.session_state.experience += 1
 
         # Update Inventory
