@@ -6,7 +6,7 @@ st.title("Fishing Simulator")
 FishData=["Salmon", "Cod"]
 
 def fish():
-    Fish_Index = random.randint(1,len(FishData))
+    Fish_Index = random.randint(0,len(FishData))
     return FishData[Fish_Index]
 
 Class_List = ["a","b","c"]
@@ -26,6 +26,5 @@ if prompt := st.chat_input("Say something:"):
     
     with st.chat_message("assistant"):
         st.markdown(bot_response)
-        st.markdown(st.session_state.message)
     
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
