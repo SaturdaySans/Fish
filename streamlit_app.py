@@ -41,15 +41,16 @@ def handle_command(command):
         return (
             "**Available Commands:**\n"
             "- `/fish` — Cast thy rod and tempt the deep\n"
-            "- `/money` — View thy coinage 💰\n"
             "- `/inventory` — Examine thy glorious catches 🧺\n"
+            "- `/sell` — Sell all thy fish for Fincoins 💰\n"
+            "- `/money` — View thy coinage 💰\n"
             "- `/experience` — Behold thy accumulated wisdom ✨\n"
+            "- `/shop` — View fish sell values 📜\n"
             "- `/help` — This guide of holy waters"
         )
 
     elif command == "/fish":
         catch = fish()
-        st.session_state.money += catch["reward"]
         st.session_state.experience += 1
 
         # Update Inventory
@@ -61,7 +62,8 @@ def handle_command(command):
 
         return (
             f"You cast your rod... and lo! You caught a **{catch['rarity']} {name}**! 🐟\n"
-            f"💰 +{catch['reward']} Fincoins | ✨ +1 XP"
+            f"✨ +1 XP\n"
+            f"(Sell it later using `/sell` to earn Fincoins!)"
         )
 
     elif command == "/money":
@@ -78,8 +80,36 @@ def handle_command(command):
             response += f"- **{info['rarity']} {name}** × {info['count']}\n"
         return response
 
+    elif command == "/sell":
+        if not st.session_state.inventory:
+            return "Thou possesseth no fish to sell, o poor soul!"
+
+        total_earned = 0
+        summary = "**You step into the market and sell thy bounty:**\n"
+
+        for name, info in st.session_state.inventory.items():
+            count = info["count"]
+            fish_data = next(f for f in FishPool if f["name"] == name)
+            reward = fish_data["reward"]
+            earned = reward * count
+            total_earned += earned
+            summary += f"- **{info['rarity']} {name}** × {count} → 💰 +{earned} Fincoins\n"
+
+        st.session_state.money += total_earned
+        st.session_state.inventory = {}  # Clear inventory
+
+        summary += f"\n💰 **Total Earned:** {total_earned} Fincoins!"
+        return summary
+
+    elif command == "/shop":
+        response = "**📜 Fish Shop — Current Sell Values:**\n"
+        for fish in FishPool:
+            response += f"- **{fish['rarity']} {fish['name']}** → {fish['reward']} Fincoins\n"
+        return response
+
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
+
 
 # 🌊 State Initialization
 if "messages" not in st.session_state:
