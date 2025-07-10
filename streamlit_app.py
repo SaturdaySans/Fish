@@ -3,11 +3,11 @@ import random
 
 st.title("Fishing Simulator")
 
-Data=["Salmon", "Cod"]
+FishData=["Salmon", "Cod"]
 
 def fish():
-    Fish_Index = random.randint(1,2)
-    st.write(Data[Fish_Index])
+    Fish_Index = random.randint(1,len(FishData))
+    return FishData[Fish_Index]
 
 Class_List = ["a","b","c"]
 
@@ -24,9 +24,10 @@ if prompt := st.chat_input("Say something:"):
         st.markdown(prompt)
     fish()
     index=random.randint(1,len(Data))
-    bot_response = Data[index-1]
+    bot_response = FishData[index-1]
     
     with st.chat_message("assistant"):
         st.markdown(bot_response)
+        st.markdown(st.session_state.message)
     
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
