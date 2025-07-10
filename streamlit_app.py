@@ -166,13 +166,6 @@ def handle_command(command):
             f"- **{r}**: {(rarity_totals[r] / total) * 100:.2f}%" for r in rarity_totals
         )
 
-        st.markdown("#### 🎯 Choose Your Bait")
-        for bait_option in BaitEffects:
-            if st.button(f"Switch to {bait_option}"):
-                st.session_state.current_bait = bait_option
-                st.success(f"🎣 You now use **{bait_option}**!")
-                st.rerun()
-
         bait_data = "\n".join(f"- {r}: ×{mult}" for r, mult in bait_effect.items())
 
         return (
@@ -180,7 +173,8 @@ def handle_command(command):
             f"🧠 **Player Level:** {level}\n"
             f"🪱 **Current Bait:** {bait}\n\n"
             f"**🎯 Rarity Chances When Fishing:**\n{rarity_chances}\n"
-            f"**🔬 Bait Effects (× Weight Multiplier):**\n{bait_data}"
+            f"**🔬 Bait Effects (× Weight Multiplier):**\n{bait_data}\n\n"
+            f"⬇️ Use the buttons below to switch bait."
         )
 
     elif command == "/shop":
@@ -241,6 +235,15 @@ if prompt := st.chat_input("Type /fish, /inventory, /experience, etc."):
         st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
+
+# 🪱 Render bait switch buttons if last command was /rod
+if st.session_state.last_command == "/rod":
+    st.markdown("#### 🎯 Choose Your Bait")
+    for bait_option in BaitEffects:
+        if st.button(f"Switch to {bait_option}"):
+            st.session_state.current_bait = bait_option
+            st.success(f"🎣 You now use **{bait_option}**!")
+            st.rerun()
 
 # 🛒 Render shop UI if /shop was the last command
 if st.session_state.last_command == "/shop":
