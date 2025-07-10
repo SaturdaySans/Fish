@@ -47,15 +47,15 @@ if prompt := st.chat_input("Enter a command"):
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
 # 🎣 The Divine Button of Destiny
-if st.button("🎣 Fish Now"):
+if st.button("🎣 Fish"):
     catch = fish()
     response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 🌊✨"
     
     with st.chat_message("user"):
-        st.markdown("🎣 [Button Pressed] Fish Now")
+        st.markdown("🎣 Rod Casted")
 
     with st.chat_message("assistant"):
         st.markdown(response)
 
-    st.session_state.messages.append({"role": "user", "content": "🎣 [Button Pressed] Fish Now"})
+    st.session_state.messages.append({"role": "user", "content": "🎣 Rod Casted"})
     st.session_state.messages.append({"role": "assistant", "content": response})
