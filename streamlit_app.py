@@ -26,11 +26,41 @@ FishPool = [
     {"name": "Celestial Bubblefish", "rarity": "Legendary", "weight": 1, "reward": 130},
 ]
 
-# 🎣 Weighted Random Fish
+# 🧠 XP to Level Conversion
+def get_level_and_progress(experience):
+    level = int(experience ** 0.5)  # XP grows quadratically
+    next_level_xp = (level + 1) ** 2
+    current_level_xp = level ** 2
+    progress = experience - current_level_xp
+    needed = next_level_xp - current_level_xp
+    return level, progress, needed
+
+# 🎣 Adjusted Random Fish Based on XP
 def go_fishing():
+    xp = st.session_state.experience
+    level, _, _ = get_level_and_progress(xp)
+
+    # Modify weights based on XP
+    adjusted_weights = []
+    for f in FishPool:
+        rarity = f["rarity"]
+        base = f["weight"]
+        if rarity == "Common":
+            adjusted = base * max(1.0 - (level * 0.02), 0.2)
+        elif rarity == "Uncommon":
+            adjusted = base * (1.0 + level * 0.01)
+        elif rarity == "Rare":
+            adjusted = base * (1.0 + level * 0.02)
+        elif rarity == "Epic":
+            adjusted = base * (1.0 + level * 0.025)
+        elif rarity == "Legendary":
+            adjusted = base * (1.0 + level * 0.03)
+        else:
+            adjusted = base
+        adjusted_weights.append(adjusted)
+
     names = [f["name"] for f in FishPool]
-    weights = [f["weight"] for f in FishPool]
-    chosen_name = random.choices(names, weights=weights, k=1)[0]
+    chosen_name = random.choices(names, weights=adjusted_weights, k=1)[0]
     return next(f for f in FishPool if f["name"] == chosen_name)
 
 # 🧾 Command Handler
@@ -70,7 +100,13 @@ def handle_command(command):
         return f"Thy treasury holdeth **{st.session_state.money} Fincoins**. 💰"
 
     elif command == "/experience":
-        return f"Thou hast earned **{st.session_state.experience} XP** through fishful valor. ✨"
+        xp = st.session_state.experience
+        level, progress, needed = get_level_and_progress(xp)
+
+        # Display level info and XP bar
+        st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
+        st.progress(progress / needed)
+        return f"Your fishing prowess grows. You are **Level {level}**, with **{xp} XP**."
 
     elif command == "/inventory":
         if not st.session_state.inventory:
