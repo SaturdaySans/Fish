@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-st.title("🐟 Fishing Simulator — Inventory & Experience Edition")
+st.title("🐟 Fishing Simulator")
 
 # 🎏 The Vast Pool of Fontaine's Finned Folk
 FishPool = [
