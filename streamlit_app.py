@@ -28,33 +28,34 @@ FishPool = [
 
 # 🧠 XP to Level Conversion
 def get_level_and_progress(experience):
-    level = int(experience ** 0.5)  # XP grows quadratically
+    level = int(experience ** 0.5)
     next_level_xp = (level + 1) ** 2
     current_level_xp = level ** 2
     progress = experience - current_level_xp
     needed = next_level_xp - current_level_xp
     return level, progress, needed
 
-# 🎣 Adjusted Random Fish Based on XP
+# 🎣 Adjusted Random Fish Based on XP + Rod Level
 def go_fishing():
     xp = st.session_state.experience
     level, _, _ = get_level_and_progress(xp)
+    rod_level = st.session_state.rod_level
 
-    # Modify weights based on XP
     adjusted_weights = []
     for f in FishPool:
         rarity = f["rarity"]
         base = f["weight"]
+        bonus = rod_level * 0.015
         if rarity == "Common":
-            adjusted = base * max(1.0 - (level * 0.02), 0.2)
+            adjusted = base * max(1.0 - (level * 0.02 + rod_level * 0.03), 0.1)
         elif rarity == "Uncommon":
-            adjusted = base * (1.0 + level * 0.01)
+            adjusted = base * (1.0 + level * 0.01 + bonus)
         elif rarity == "Rare":
-            adjusted = base * (1.0 + level * 0.02)
+            adjusted = base * (1.0 + level * 0.02 + bonus)
         elif rarity == "Epic":
-            adjusted = base * (1.0 + level * 0.025)
+            adjusted = base * (1.0 + level * 0.025 + bonus)
         elif rarity == "Legendary":
-            adjusted = base * (1.0 + level * 0.03)
+            adjusted = base * (1.0 + level * 0.03 + bonus)
         else:
             adjusted = base
         adjusted_weights.append(adjusted)
@@ -75,7 +76,7 @@ def handle_command(command):
             "- `/sell` — Sell all thy fish for Fincoins 💰\n"
             "- `/money` — View thy coinage 💰\n"
             "- `/experience` — Behold thy accumulated wisdom ✨\n"
-            "- `/shop` — View fish sell values 📜\n"
+            "- `/shop` — Upgrade your rod 🎣\n"
             "- `/help` — This guide of holy waters"
         )
 
@@ -102,8 +103,6 @@ def handle_command(command):
     elif command == "/experience":
         xp = st.session_state.experience
         level, progress, needed = get_level_and_progress(xp)
-
-        # Display level info and XP bar
         st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
         st.progress(progress / needed)
         return f"Your fishing prowess grows. You are **Level {level}**, with **{xp} XP**."
@@ -138,14 +137,23 @@ def handle_command(command):
         return summary
 
     elif command == "/shop":
-        response = "**📜 Fish Shop — Current Sell Values:**\n"
-        for fish in FishPool:
-            response += f"- **{fish['rarity']} {fish['name']}** → {fish['reward']} Fincoins\n"
-        return response
+        cost = 50 * (st.session_state.rod_level + 1)
+        if st.button(f"Upgrade Rod (Lv.{st.session_state.rod_level}) → Lv.{st.session_state.rod_level + 1} for {cost} Fincoins"):
+            if st.session_state.money >= cost:
+                st.session_state.money -= cost
+                st.session_state.rod_level += 1
+                st.success(f"🔧 Rod upgraded to Level {st.session_state.rod_level}!")
+            else:
+                st.error("Thou hath not enough Fincoins!")
+
+        return (
+            f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
+            f"💰 **Upgrade Cost:** {cost} Fincoins\n"
+            f"Each level increases your chances of catching rarer fish!"
+        )
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
-
 
 # 🌊 State Initialization
 if "messages" not in st.session_state:
@@ -159,6 +167,9 @@ if "experience" not in st.session_state:
 
 if "inventory" not in st.session_state:
     st.session_state.inventory = {}
+
+if "rod_level" not in st.session_state:
+    st.session_state.rod_level = 0
 
 # 📜 Show Previous Messages
 for message in st.session_state.messages:
