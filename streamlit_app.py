@@ -2,30 +2,56 @@ import streamlit as st
 import random
 import time
 
-st.title("🐟 Fishing Simulator ")
+st.title("🐟 Fishing Simulator")
 
-# 🎏 The Vast Pool of Fontaine's Finned Folk
+# 🐠 Expanded Pool of Fontaine's Finned Folk
 FishPool = [
     {"name": "Salmon", "rarity": "Common", "weight": 50, "reward": 5},
     {"name": "Cod", "rarity": "Common", "weight": 50, "reward": 3},
     {"name": "Mackerel", "rarity": "Common", "weight": 40, "reward": 4},
     {"name": "Anchovy", "rarity": "Common", "weight": 45, "reward": 2},
     {"name": "Herring", "rarity": "Common", "weight": 40, "reward": 3},
+    {"name": "Bubble Minnow", "rarity": "Common", "weight": 38, "reward": 2},
+
     {"name": "Tuna", "rarity": "Uncommon", "weight": 20, "reward": 8},
     {"name": "Sardine Swarm", "rarity": "Uncommon", "weight": 20, "reward": 7},
     {"name": "Sea Bass", "rarity": "Uncommon", "weight": 18, "reward": 9},
+    {"name": "Glass Snapper", "rarity": "Uncommon", "weight": 16, "reward": 10},
+
     {"name": "Golden Carp", "rarity": "Rare", "weight": 10, "reward": 20},
     {"name": "Electric Eel", "rarity": "Rare", "weight": 10, "reward": 22},
     {"name": "Moon Jellyfish", "rarity": "Rare", "weight": 8, "reward": 18},
+    {"name": "Stormfin Tuna", "rarity": "Rare", "weight": 7, "reward": 25},
+
     {"name": "Swordfish", "rarity": "Epic", "weight": 5, "reward": 40},
     {"name": "Ornamental Koi", "rarity": "Epic", "weight": 4, "reward": 35},
     {"name": "Crystal Lionfish", "rarity": "Epic", "weight": 3, "reward": 50},
+    {"name": "Echo Stingray", "rarity": "Epic", "weight": 2, "reward": 55},
+
     {"name": "Ancient Leviathan Scale", "rarity": "Legendary", "weight": 1, "reward": 100},
     {"name": "Abyssal Kraken Tentacle", "rarity": "Legendary", "weight": 1, "reward": 120},
     {"name": "Phantom Seahorse", "rarity": "Legendary", "weight": 1, "reward": 90},
     {"name": "Mythic Coral Wyrm", "rarity": "Legendary", "weight": 1, "reward": 150},
     {"name": "Celestial Bubblefish", "rarity": "Legendary", "weight": 1, "reward": 130},
+
+    {"name": "Starborn Leviathan", "rarity": "Mythical", "weight": 0.3, "reward": 250},
+    {"name": "Chrono Serpent", "rarity": "Mythical", "weight": 0.2, "reward": 300},
 ]
+
+# 🎨 Rarity Colors
+RARITY_COLORS = {
+    "Common": "gray",
+    "Uncommon": "green",
+    "Rare": "blue",
+    "Epic": "purple",
+    "Legendary": "orange",
+    "Mythical": "red"
+}
+
+# 🎫 Format Catch Name with Color
+def format_fish_name(name, rarity):
+    color = RARITY_COLORS.get(rarity, "black")
+    return f"<span style='color:{color}'><b>{rarity} {name}</b></span>"
 
 # 🧠 XP to Level Conversion
 def get_level_and_progress(experience):
@@ -57,6 +83,8 @@ def go_fishing():
             adjusted = base * (1.0 + level * 0.025 + bonus)
         elif rarity == "Legendary":
             adjusted = base * (1.0 + level * 0.03 + bonus)
+        elif rarity == "Mythical":
+            adjusted = base * (1.0 + level * 0.05 + bonus)
         else:
             adjusted = base
         adjusted_weights.append(adjusted)
@@ -101,19 +129,17 @@ def handle_command(command):
             time.sleep(random.uniform(2.0, 2.5))
         elif rarity == "Legendary":
             time.sleep(random.uniform(2.5, 3.0))
+        elif rarity == "Mythical":
+            time.sleep(random.uniform(3.0, 4.0))
 
-        # Update Inventory
         name = catch["name"]
         if name in st.session_state.inventory:
             st.session_state.inventory[name]["count"] += 1
         else:
-            st.session_state.inventory[name] = {"rarity": catch["rarity"], "count": 1}
+            st.session_state.inventory[name] = {"rarity": rarity, "count": 1}
 
-        return (
-            f"You cast your rod... and lo! You caught a **{catch['rarity']} {name}**! 🐟\n"
-            f"✨ +1 XP | 🪱 -1 Bait (Remaining: {st.session_state.bait})\n"
-            f"(Sell it later using `/sell` to earn Fincoins!)"
-        )
+        st.markdown(format_fish_name(name, rarity), unsafe_allow_html=True)
+        return f"✨ +1 XP | 🪱 -1 Bait (Remaining: {st.session_state.bait})"
 
     elif command == "/money":
         return f"Thy treasury holdeth **{st.session_state.money} Fincoins**. 💰"
@@ -128,35 +154,33 @@ def handle_command(command):
     elif command == "/inventory":
         if not st.session_state.inventory:
             return "Thy basket is empty. Go forth and fish!"
-        response = "**Inventory of Caught Creatures:**\n"
+        st.markdown("**Inventory of Caught Creatures:**")
         for name, info in st.session_state.inventory.items():
-            response += f"- **{info['rarity']} {name}** × {info['count']}\n"
-        return response
+            st.markdown(f"- {format_fish_name(name, info['rarity'])} × {info['count']}", unsafe_allow_html=True)
+        return ""
 
     elif command == "/sell":
         if not st.session_state.inventory:
             return "Thou possesseth no fish to sell, o poor soul!"
 
         total_earned = 0
-        summary = "**You step into the market and sell thy bounty:**\n"
-
+        st.markdown("**You step into the market and sell thy bounty:**")
         for name, info in st.session_state.inventory.items():
             count = info["count"]
             fish_data = next(f for f in FishPool if f["name"] == name)
             reward = fish_data["reward"]
             earned = reward * count
             total_earned += earned
-            summary += f"- **{info['rarity']} {name}** × {count} → 💰 +{earned} Fincoins\n"
+            st.markdown(f"- {format_fish_name(name, info['rarity'])} × {count} → 💰 +{earned} Fincoins", unsafe_allow_html=True)
 
         st.session_state.money += total_earned
-        st.session_state.inventory = {}  # Clear inventory
+        st.session_state.inventory = {}
 
-        summary += f"\n💰 **Total Earned:** {total_earned} Fincoins!"
-        return summary
+        return f"\n💰 **Total Earned:** {total_earned} Fincoins!"
 
     elif command == "/shop":
         rod_cost = 50 * (st.session_state.rod_level + 1)
-        bait_cost = 10  # 10 Fincoins for 5 bait
+        bait_cost = 10
 
         if st.button(f"Upgrade Rod (Lv.{st.session_state.rod_level}) → Lv.{st.session_state.rod_level + 1} for {rod_cost} Fincoins"):
             if st.session_state.money >= rod_cost:
@@ -218,7 +242,8 @@ if prompt := st.chat_input("Type /fish, /inventory, /experience, etc."):
 
     response = handle_command(prompt)
 
-    with st.chat_message("assistant"):
-        st.markdown(response)
+    if response:
+        with st.chat_message("assistant"):
+            st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
