@@ -22,9 +22,7 @@ if prompt := st.chat_input("Say something:"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-    fish()
-    index=random.randint(1,len(Data))
-    bot_response = FishData[index-1]
+    bot_response = fish()
     
     with st.chat_message("assistant"):
         st.markdown(bot_response)
