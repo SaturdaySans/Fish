@@ -5,15 +5,13 @@ from fish_data import FishPool, BaitEffects
 
 st.title("🐟 Fishing Simulator")
 
-# 💰 Bait Prices
 BaitPrices = {
     "Worm Bait": 10,
-    "Rock Bait": 5,      # Reduced price as requested
+    "Rock Bait": 5,
     "Salt Bait": 25,
     "Golden Bait": 50
 }
 
-# 🧠 XP to Level Conversion
 def get_level_and_progress(experience):
     level = int(experience ** 0.5)
     next_level_xp = (level + 1) ** 2
@@ -22,7 +20,6 @@ def get_level_and_progress(experience):
     needed = next_level_xp - current_level_xp
     return level, progress, needed
 
-# 🐠 Weighted Fishing Logic
 def go_fishing():
     xp = st.session_state.experience
     level, _, _ = get_level_and_progress(xp)
@@ -40,11 +37,8 @@ def go_fishing():
             adjusted = base * max(1.0 - (level * 0.02 + rod_level * 0.03), 0.1) * rarity_bonus
         else:
             scale = {
-                "Uncommon": 0.01,
-                "Rare": 0.02,
-                "Epic": 0.025,
-                "Legendary": 0.03,
-                "Mythical": 0.04
+                "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
+                "Legendary": 0.03, "Mythical": 0.04
             }[rarity]
             adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus
         adjusted_weights.append(adjusted)
@@ -53,29 +47,28 @@ def go_fishing():
     chosen_name = random.choices(names, weights=adjusted_weights, k=1)[0]
     return next(f for f in FishPool if f["name"] == chosen_name)
 
-# 🧾 Command Handler
 def handle_command(command):
     command = command.strip().lower()
 
     if command == "/help":
         return (
             "**Available Commands:**\n"
-            "- `/fish` — Cast thy rod and tempt the deep\n"
-            "- `/inventory` — View caught fish 🧺\n"
-            "- `/sell` — Sell fish for Fincoins 💰\n"
-            "- `/money` — View thy wealth 💰\n"
-            "- `/experience` — Check thy fishing level ✨\n"
+            "- `/fish` — Cast thy rod\n"
+            "- `/inventory` — View your fish 🧺\n"
+            "- `/sell` — Sell fish 💰\n"
+            "- `/money` — View Fincoins 💰\n"
+            "- `/experience` — Check XP ✨\n"
             "- `/shop` — Upgrade rod / Buy bait 🎣\n"
-            "- `/rod` — Check stats / Switch bait 🎯\n"
-            "- `/dictionary` — View fish you’ve discovered 📖\n"
-            "- `/help` — This guide of holy waters"
+            "- `/rod` — Stats & Switch bait 🎯\n"
+            "- `/dictionary` — Fish discovered 📖\n"
+            "- `/help` — This guide"
         )
 
     elif command == "/fish":
         bait = st.session_state.current_bait
         bait_count = st.session_state.bait_inventory.get(bait, 0)
         if bait_count <= 0:
-            return f"🪱 You have no **{bait}**! Visit the `/shop` to buy more."
+            return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
 
         catch = go_fishing()
         st.session_state.experience += 1
@@ -100,48 +93,54 @@ def handle_command(command):
         st.session_state.dictionary.add(name)
 
         return (
-            f"You cast your rod... and lo! You caught a **{catch['rarity']} {name}**! 🐟\n"
-            f"✨ +1 XP | 🪱 -1 {bait} (Remaining: {st.session_state.bait_inventory[bait]})\n"
-            f"(Sell it later using `/sell` to earn Fincoins!)"
+            f"You caught a **{catch['rarity']} {name}**! 🐟\n"
+            f"✨ +1 XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
         )
 
     elif command == "/money":
-        return f"Thy treasury holdeth **{st.session_state.money} Fincoins**. 💰"
+        return f"You have **{st.session_state.money} Fincoins**. 💰"
 
     elif command == "/experience":
         xp = st.session_state.experience
         level, progress, needed = get_level_and_progress(xp)
+        sell_bonus = int(level * 2)
+
         st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
         st.progress(progress / needed)
-        return f"Your fishing prowess grows. You are **Level {level}**, with **{xp} XP**."
+        return (
+            f"**Your Fishing Experience:**\n"
+            f"- 🎣 **Level:** {level} (XP: {xp})\n"
+            f"- 📈 **Sell Bonus:** +{sell_bonus}% profit on fish sales\n"
+            f"- 🐟 **Catch Bonus:** More chance for rarer fish\n"
+            f"- 🔓 Level up by fishing to earn more Fincoins!"
+        )
 
     elif command == "/inventory":
         if not st.session_state.inventory:
-            return "Thy basket is empty. Go forth and fish!"
-        response = "**Inventory of Caught Creatures:**\n"
+            return "Your basket is empty!"
+        response = "**Your Inventory:**\n"
         for name, info in st.session_state.inventory.items():
             response += f"- **{info['rarity']} {name}** × {info['count']}\n"
         return response
 
     elif command == "/sell":
         if not st.session_state.inventory:
-            return "Thou possesseth no fish to sell!"
+            return "No fish to sell!"
         level, _, _ = get_level_and_progress(st.session_state.experience)
-        sell_bonus = 1 + (level * 0.02)  # 2% per level
+        sell_bonus = 1 + (level * 0.02)
 
-        total_earned = 0
-        summary = "**You step into the market and sell thy bounty:**\n"
+        total = 0
+        summary = "**You sold your fish:**\n"
         for name, info in st.session_state.inventory.items():
-            count = info["count"]
-            base_reward = next(f for f in FishPool if f["name"] == name)["reward"]
-            adjusted_reward = int(base_reward * sell_bonus)
-            earned = adjusted_reward * count
-            total_earned += earned
-            summary += f"- **{info['rarity']} {name}** × {count} → 💰 +{earned} Fincoins\n"
+            base = next(f for f in FishPool if f["name"] == name)["reward"]
+            adjusted = int(base * sell_bonus)
+            earned = adjusted * info["count"]
+            total += earned
+            summary += f"- **{info['rarity']} {name}** × {info['count']} → +{earned} Fincoins\n"
 
-        st.session_state.money += total_earned
+        st.session_state.money += total
         st.session_state.inventory = {}
-        return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins! (Sell bonus: +{int((sell_bonus-1)*100)}%)"
+        return summary + f"\n💰 **Total:** {total} Fincoins! (+{int((sell_bonus-1)*100)}% bonus)"
 
     elif command == "/rod":
         rod = st.session_state.rod_level
@@ -171,9 +170,8 @@ def handle_command(command):
         rarity_chances = "\n".join(
             f"- **{r}**: {(rarity_totals[r] / total) * 100:.2f}%" for r in rarity_totals
         )
-
         bait_data = "\n".join(f"- {r}: ×{mult}" for r, mult in bait_effect.items())
-        baits_owned = "\n".join(f"- {bait}: {qty}" for bait, qty in st.session_state.bait_inventory.items())
+        baits_owned = "\n".join(f"- {b}: {q}" for b, q in st.session_state.bait_inventory.items())
 
         return (
             f"🎣 **Rod Level:** {rod}\n"
@@ -181,15 +179,13 @@ def handle_command(command):
             f"🪱 **Current Bait:** {bait}\n\n"
             f"**🎯 Rarity Chances:**\n{rarity_chances}\n"
             f"**🔬 Bait Effects:**\n{bait_data}\n"
-            f"**📦 Baits Owned:**\n{baits_owned}\n\n"
-            f"⬇️ Switch bait using buttons below."
+            f"**📦 Baits Owned:**\n{baits_owned}\n"
         )
 
     elif command == "/shop":
-        baits = "\n".join(f"- {bait}: {qty}" for bait, qty in st.session_state.bait_inventory.items())
+        baits = "\n".join(f"- {b}: {q}" for b, q in st.session_state.bait_inventory.items())
         return (
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
-            f"🧠 **Player Level:** {get_level_and_progress(st.session_state.experience)[0]}\n"
             f"**Baits Owned:**\n{baits}\n"
             f"**Current Bait:** {st.session_state.current_bait}"
         )
@@ -204,12 +200,12 @@ def handle_command(command):
             status = name if name in seen else "[Locked]"
             data.append({"Rarity": rarity, "Name": status, "Base Reward": reward})
         st.dataframe(data)
-        return "**Above is thy Fish Dictionary (with prices).**"
+        return "**Above is your Fish Dictionary.**"
 
     else:
-        return "Unknown command. Use `/help` to consult the waves of wisdom."
+        return "Unknown command."
 
-# 🌊 State Init
+# States
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "money" not in st.session_state:
@@ -229,12 +225,10 @@ if "dictionary" not in st.session_state:
 if "last_command" not in st.session_state:
     st.session_state.last_command = ""
 
-# 📜 Show chat
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 💬 Process input
 if prompt := st.chat_input("Type /fish, /rod, /shop, etc."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -248,20 +242,17 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, etc."):
 
     st.session_state.messages.append({"role": "assistant", "content": response})
 
-# 🪱 Bait switcher for /rod
 if st.session_state.last_command == "/rod":
     st.markdown("#### 🎯 Switch Bait")
-    for bait_option, qty in st.session_state.bait_inventory.items():
-        if qty > 0 and st.button(f"Use {bait_option} ({qty})"):
-            st.session_state.current_bait = bait_option
-            st.success(f"🎣 Now using **{bait_option}**!")
+    for bait, qty in st.session_state.bait_inventory.items():
+        if qty > 0 and st.button(f"Use {bait} ({qty})"):
+            st.session_state.current_bait = bait
+            st.success(f"🎣 Now using **{bait}**!")
             st.rerun()
 
-# 🛒 Shop for /shop
 if st.session_state.last_command == "/shop":
     rod_cost = 50 * (st.session_state.rod_level + 1)
-
-    if st.button(f"Upgrade Rod to Lv.{st.session_state.rod_level + 1} ({rod_cost} Fincoins)"):
+    if st.button(f"Upgrade Rod Lv.{st.session_state.rod_level} → Lv.{st.session_state.rod_level+1} ({rod_cost} Fincoins)"):
         if st.session_state.money >= rod_cost:
             st.session_state.money -= rod_cost
             st.session_state.rod_level += 1
@@ -275,6 +266,6 @@ if st.session_state.last_command == "/shop":
             if st.session_state.money >= price:
                 st.session_state.money -= price
                 st.session_state.bait_inventory[bait] = st.session_state.bait_inventory.get(bait, 0) + 5
-                st.success(f"🪱 Bought 5 × {bait}!")
+                st.success(f"Bought 5 × {bait}!")
             else:
                 st.error("Too poor!")
