@@ -129,7 +129,7 @@ def handle_command(command):
         st.session_state.inventory = {}
 
         return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins!"
-
+    
     elif command == "/rod":
         rod = st.session_state.rod_level
         bait = st.session_state.current_bait
@@ -178,20 +178,16 @@ def handle_command(command):
         )
 
     elif command == "/shop":
-        rod_cost = 50 * (st.session_state.rod_level + 1)
-        bait_cost = 10
-
         return (
-            f"### 🛒 The Bait & Tackle Shop\n\n"
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
             f"🪱 **Bait:** {st.session_state.bait} | **Type:** {st.session_state.current_bait}\n"
-            f"💰 **Upgrade Cost:** {rod_cost} Fincoins\n"
-            f"💰 **Bait Cost:** {bait_cost} Fincoins (for 5)\n\n"
-            f"#### 🎯 Use the buttons below to upgrade or change bait."
+            f"💰 **Upgrade Cost:** {50 * (st.session_state.rod_level + 1)} Fincoins\n"
+            f"💰 **Bait Cost:** 10 Fincoins (for 5)"
         )
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
+
 
 # 🌊 State Initialization
 if "messages" not in st.session_state:
@@ -208,6 +204,8 @@ if "bait" not in st.session_state:
     st.session_state.bait = 10
 if "current_bait" not in st.session_state:
     st.session_state.current_bait = "Worm Bait"
+if "last_command" not in st.session_state:
+    st.session_state.last_command = ""
 
 # 📜 Show Previous Messages
 for message in st.session_state.messages:
@@ -221,14 +219,15 @@ if prompt := st.chat_input("Type /fish, /inventory, /experience, etc."):
         st.markdown(prompt)
 
     response = handle_command(prompt)
+    st.session_state.last_command = prompt.strip().lower()
 
     with st.chat_message("assistant"):
         st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
 
-# 🛒 Execute shop actions if last command was /shop
-if st.session_state.messages and st.session_state.messages[-1]["content"].strip().lower() == "/shop":
+# 🛒 Render shop UI if /shop was the last command
+if st.session_state.last_command == "/shop":
     rod_cost = 50 * (st.session_state.rod_level + 1)
     bait_cost = 10
 
