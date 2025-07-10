@@ -46,10 +46,30 @@ if "messages" not in st.session_state:
 if "money" not in st.session_state:
     st.session_state.money = 0
 
-# 💬 Display past messages
-for message in st.session_state.messages:
+# 💬 Display all past messages
+for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+    
+    # Add button only after the **last assistant message**
+    if i == len(st.session_state.messages) - 1 and message["role"] == "assistant":
+        if st.button("🎣 Fish Again", key=f"fish_button_{i}"):
+            catch = fish()
+            reward = FishRewards.get(catch, 0)
+            st.session_state.money += reward
+
+            user_msg = "🎣 Rod Casted"
+            response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 💰 +{reward} Fincoins!"
+
+            with st.chat_message("user"):
+                st.markdown(user_msg)
+
+            with st.chat_message("assistant"):
+                st.markdown(response)
+
+            st.session_state.messages.append({"role": "user", "content": user_msg})
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.experimental_rerun()  # Refresh immediately to insert button after new message
 
 # 👂 Handle chat input
 if prompt := st.chat_input("Enter a command:"):
@@ -63,23 +83,3 @@ if prompt := st.chat_input("Enter a command:"):
         st.markdown(bot_response)
 
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
-
-# 🪄 Place button **below** chat
-st.divider()
-st.subheader("🎣 Cast Your Rod Below")
-
-if st.button("🎣 Fish Now"):
-    catch = fish()
-    reward = FishRewards.get(catch, 0)
-    st.session_state.money += reward
-    user_msg = "🎣 Rod Casted"
-    response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 💰 +{reward} Fincoins!"
-
-    with st.chat_message("user"):
-        st.markdown(user_msg)
-
-    with st.chat_message("assistant"):
-        st.markdown(response)
-
-    st.session_state.messages.append({"role": "user", "content": user_msg})
-    st.session_state.messages.append({"role": "assistant", "content": response})
