@@ -63,10 +63,11 @@ def handle_command(command):
             "- `/fish` — Cast thy rod and tempt the deep\n"
             "- `/inventory` — View caught fish 🧺\n"
             "- `/sell` — Sell fish for Fincoins 💰\n"
-            "- `/money` — View thy wealth 💰\n"
+            - "/money` — View thy wealth 💰\n"
             "- `/experience` — Check thy fishing level ✨\n"
             "- `/shop` — Upgrade rod / Buy bait / Change bait 🎣\n"
             "- `/rod` — Check fishing stats / Switch bait 🎯\n"
+            "- `/dictionary` — View fish you’ve discovered 📖\n"
             "- `/help` — This guide of holy waters"
         )
 
@@ -96,6 +97,7 @@ def handle_command(command):
             st.session_state.inventory[name]["count"] += 1
         else:
             st.session_state.inventory[name] = {"rarity": catch["rarity"], "count": 1}
+        st.session_state.dictionary.add(name)
 
         return (
             f"You cast your rod... and lo! You caught a **{catch['rarity']} {name}**! 🐟\n"
@@ -124,7 +126,6 @@ def handle_command(command):
     elif command == "/sell":
         if not st.session_state.inventory:
             return "Thou possesseth no fish to sell!"
-
         total_earned = 0
         summary = "**You step into the market and sell thy bounty:**\n"
         for name, info in st.session_state.inventory.items():
@@ -136,9 +137,8 @@ def handle_command(command):
 
         st.session_state.money += total_earned
         st.session_state.inventory = {}
-
         return summary + f"\n💰 **Total Earned:** {total_earned} Fincoins!"
-    
+
     elif command == "/rod":
         rod = st.session_state.rod_level
         bait = st.session_state.current_bait
@@ -158,31 +158,24 @@ def handle_command(command):
                 adj = base * max(1.0 - (level * 0.02 + rod * 0.03), 0.1) * bait_bonus
             else:
                 scale = {
-                    "Uncommon": 0.01,
-                    "Rare": 0.02,
-                    "Epic": 0.025,
-                    "Legendary": 0.03,
-                    "Mythical": 0.04
+                    "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
+                    "Legendary": 0.03, "Mythical": 0.04
                 }[rarity]
                 adj = base * (1.0 + level * scale + bonus) * bait_bonus
             rarity_totals[rarity] += adj
 
         total = sum(rarity_totals.values())
-
-        rarity_chances = ""
-        for rarity in rarity_totals:
-            chance = (rarity_totals[rarity] / total) * 100
-            rarity_chances += f"- **{rarity}**: {chance:.2f}%\n"
-
-        bait_data = ""
-        for r, mult in bait_effect.items():
-            bait_data += f"- {r}: ×{mult}\n"
+        rarity_chances = "\n".join(
+            f"- **{r}**: {(rarity_totals[r] / total) * 100:.2f}%" for r in rarity_totals
+        )
 
         st.markdown("#### 🎯 Choose Your Bait")
-        for bait in BaitEffects:
-            if st.button(f"Switch to {bait}"):
-                st.session_state.current_bait = bait
-                st.success(f"🎣 You now use **{bait}**!")
+        for bait_option in BaitEffects:
+            if st.button(f"Switch to {bait_option}"):
+                st.session_state.current_bait = bait_option
+                st.success(f"🎣 You now use **{bait_option}**!")
+
+        bait_data = "\n".join(f"- {r}: ×{mult}" for r, mult in bait_effect.items())
 
         return (
             f"🎣 **Rod Level:** {rod}\n"
@@ -197,6 +190,18 @@ def handle_command(command):
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
             f"🪱 **Bait:** {st.session_state.bait} | **Type:** {st.session_state.current_bait}\n"
         )
+
+    elif command == "/dictionary":
+        seen = st.session_state.dictionary
+        response = "**📖 Fish Discovered:**\n"
+        for fish in FishPool:
+            name = fish["name"]
+            rarity = fish["rarity"]
+            if name in seen:
+                response += f"- **{rarity} {name}**\n"
+            else:
+                response += f"- **{rarity} [Locked]**\n"
+        return response
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
@@ -216,6 +221,8 @@ if "bait" not in st.session_state:
     st.session_state.bait = 10
 if "current_bait" not in st.session_state:
     st.session_state.current_bait = "Worm Bait"
+if "dictionary" not in st.session_state:
+    st.session_state.dictionary = set()
 if "last_command" not in st.session_state:
     st.session_state.last_command = ""
 
