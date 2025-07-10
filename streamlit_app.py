@@ -5,6 +5,14 @@ from fish_data import FishPool, BaitEffects
 
 st.title("🐟 Fishing Simulator")
 
+# 💰 Custom Bait Prices
+BaitPrices = {
+    "Worm Bait": 10,
+    "Rock Bait": 15,
+    "Salt Bait": 25,
+    "Golden Bait": 50
+}
+
 # 🧠 XP to Level Conversion
 def get_level_and_progress(experience):
     level = int(experience ** 0.5)
@@ -58,6 +66,7 @@ def handle_command(command):
             "- `/money` — View thy wealth 💰\n"
             "- `/experience` — Check thy fishing level ✨\n"
             "- `/shop` — Upgrade rod / Buy bait / Change bait 🎣\n"
+            "- `/rod` — Check fishing stats / Switch bait 🎯\n"
             "- `/help` — This guide of holy waters"
         )
 
@@ -136,7 +145,7 @@ def handle_command(command):
         bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
 
         # Calculate adjusted weights per rarity
-        rarity_totals = {"Common": 0, "Uncommon": 0, "Rare": 0, "Epic": 0, "Legendary": 0, "Mythical": 0}
+        rarity_totals = {r: 0 for r in BaitEffects["Worm Bait"]}
         xp = st.session_state.experience
         level, _, _ = get_level_and_progress(xp)
 
@@ -161,13 +170,19 @@ def handle_command(command):
         total = sum(rarity_totals.values())
 
         rarity_chances = ""
-        for rarity in ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical"]:
+        for rarity in rarity_totals:
             chance = (rarity_totals[rarity] / total) * 100
             rarity_chances += f"- **{rarity}**: {chance:.2f}%\n"
 
         bait_data = ""
         for r, mult in bait_effect.items():
             bait_data += f"- {r}: ×{mult}\n"
+
+        st.markdown("#### 🎯 Choose Your Bait")
+        for bait in BaitEffects:
+            if st.button(f"Switch to {bait}"):
+                st.session_state.current_bait = bait
+                st.success(f"🎣 You now use **{bait}**!")
 
         return (
             f"🎣 **Rod Level:** {rod}\n"
@@ -181,13 +196,10 @@ def handle_command(command):
         return (
             f"🎣 **Rod Level:** {st.session_state.rod_level}\n"
             f"🪱 **Bait:** {st.session_state.bait} | **Type:** {st.session_state.current_bait}\n"
-            f"💰 **Upgrade Cost:** {50 * (st.session_state.rod_level + 1)} Fincoins\n"
-            f"💰 **Bait Cost:** 10 Fincoins (for 5)"
         )
 
     else:
         return "Unknown command. Use `/help` to consult the waves of wisdom."
-
 
 # 🌊 State Initialization
 if "messages" not in st.session_state:
@@ -229,7 +241,6 @@ if prompt := st.chat_input("Type /fish, /inventory, /experience, etc."):
 # 🛒 Render shop UI if /shop was the last command
 if st.session_state.last_command == "/shop":
     rod_cost = 50 * (st.session_state.rod_level + 1)
-    bait_cost = 10
 
     if st.button(f"Upgrade Rod (Lv.{st.session_state.rod_level}) → Lv.{st.session_state.rod_level + 1} for {rod_cost} Fincoins"):
         if st.session_state.money >= rod_cost:
@@ -239,16 +250,13 @@ if st.session_state.last_command == "/shop":
         else:
             st.error("Not enough Fincoins!")
 
-    if st.button(f"Buy 5 Bait for {bait_cost} Fincoins"):
-        if st.session_state.money >= bait_cost:
-            st.session_state.money -= bait_cost
-            st.session_state.bait += 5
-            st.success("🪱 Purchased 5 bait!")
-        else:
-            st.error("Not enough Fincoins!")
-
-    st.markdown("#### 🎯 Choose Your Bait")
-    for bait in BaitEffects:
-        if st.button(f"Switch to {bait}"):
-            st.session_state.current_bait = bait
-            st.success(f"🎣 You now use **{bait}**!")
+    st.markdown("#### 🪱 Buy Bait")
+    for bait, price in BaitPrices.items():
+        if st.button(f"Buy 5 × {bait} for {price} Fincoins"):
+            if st.session_state.money >= price:
+                st.session_state.money -= price
+                st.session_state.bait += 5
+                st.session_state.current_bait = bait
+                st.success(f"🪱 Purchased 5 bait and switched to **{bait}**!")
+            else:
+                st.error("Not enough Fincoins!")
