@@ -63,7 +63,7 @@ def handle_command(command):
             "- `/fish` — Cast thy rod and tempt the deep\n"
             "- `/inventory` — View caught fish 🧺\n"
             "- `/sell` — Sell fish for Fincoins 💰\n"
-            - "/money` — View thy wealth 💰\n"
+            "/money` — View thy wealth 💰\n"
             "- `/experience` — Check thy fishing level ✨\n"
             "- `/shop` — Upgrade rod / Buy bait / Change bait 🎣\n"
             "- `/rod` — Check fishing stats / Switch bait 🎯\n"
