@@ -4,6 +4,13 @@ import random
 st.title("🐟 Fishing Simulator")
 
 FishData = ["Salmon", "Cod", "Tuna", "Golden Carp", "Ancient Leviathan Scale"]
+FishRewards = {
+    "Salmon": 5,
+    "Cod": 3,
+    "Tuna": 8,
+    "Golden Carp": 20,
+    "Ancient Leviathan Scale": 100
+}
 
 def fish():
     fish_index = random.randint(0, len(FishData) - 1)
@@ -15,26 +22,37 @@ def handle_command(command):
     if command == "/help":
         return (
             "**Available Commands:**\n"
-            "- `/fish` — Try your luck and catch a fish!\n"
-            "- `/help` — Show this help message."
+            "- `/fish` — Cast your rod via command\n"
+            "- `/money` — Check your fortune 💰\n"
+            "- `/help` — Reveal the secrets of the abyss"
         )
+
     elif command == "/fish":
         catch = fish()
-        return f"You cast your line into the watery abyss... and caught a **{catch}**! 🎣"
-    else:
-        return "Unknown command. Type `/help` to see what you can do."
+        reward = FishRewards.get(catch, 0)
+        st.session_state.money += reward
+        return f"You cast your line and caught a **{catch}**! 💰 +{reward} Fincoins!"
 
-# Initialize chat history
+    elif command == "/money":
+        return f"Thy current treasury holds **{st.session_state.money} Fincoins**. 💰"
+
+    else:
+        return "Unknown command. Type `/help` to see what thou canst do."
+
+# 🏦 Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display all previous messages
+if "money" not in st.session_state:
+    st.session_state.money = 0
+
+# 💬 Display past messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 💬 Handle chat input
-if prompt := st.chat_input("Enter a command"):
+# 👂 Handle chat input
+if prompt := st.chat_input("Enter a command:"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -46,16 +64,22 @@ if prompt := st.chat_input("Enter a command"):
 
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
-# 🎣 The Divine Button of Destiny
-if st.button("🎣 Fish"):
+# 🪄 Place button **below** chat
+st.divider()
+st.subheader("🎣 Cast Your Rod Below")
+
+if st.button("🎣 Fish Now"):
     catch = fish()
-    response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 🌊✨"
-    
+    reward = FishRewards.get(catch, 0)
+    st.session_state.money += reward
+    user_msg = "🎣 Rod Casted"
+    response = f"You boldly press the divine button... and behold! A **{catch}** is caught! 💰 +{reward} Fincoins!"
+
     with st.chat_message("user"):
-        st.markdown("🎣 Rod Casted")
+        st.markdown(user_msg)
 
     with st.chat_message("assistant"):
         st.markdown(response)
 
-    st.session_state.messages.append({"role": "user", "content": "🎣 Rod Casted"})
+    st.session_state.messages.append({"role": "user", "content": user_msg})
     st.session_state.messages.append({"role": "assistant", "content": response})
