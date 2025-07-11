@@ -85,16 +85,18 @@ def handle_command(command):
             label_map[label] = name
 
         # Only unlocked locations go into dropdown
-        unlocked_labels = [label for label in label_map if "[Unlock at" not in label]
-        if not unlocked_labels:
+        label_map = {name: name for name, loc in FishingLocations.items() if xp >= loc.get("min_exp", 0)}
+
+        if not label_map:
             return "❌ You haven't unlocked any locations yet!"
 
-        selected_label = st.selectbox("🌍 Select a Location", unlocked_labels)
+        selected_label = st.selectbox("🌍 Select a Location", list(label_map.keys()))
 
         if selected_label:
             st.session_state.current_location = label_map[selected_label]
             desc = FishingLocations[st.session_state.current_location]["description"]
-            return f"📍 You travelled to **{selected_label}**!\n🌊 {desc}"
+            st.success(f"📍 You travelled to **{selected_label}**!")
+            st.rerun()
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
@@ -113,6 +115,15 @@ def handle_command(command):
                 return f"🔒 That location is locked! Requires **{required} EXP** to unlock."
         else:
             return "❌ Unknown location. Try `/travel` to see options."
+    
+    elif command == "/location":
+    loc = st.session_state.current_location
+    data = FishingLocations.get(loc)
+    if data:
+        desc = data.get("description", "No description")
+        return f"📍 **Current Location:** {loc}\n🌊 {desc}"
+    else:
+        return "❓ Unknown location!"
 
     if command == "/help":
         return (
