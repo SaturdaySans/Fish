@@ -415,27 +415,35 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 if st.session_state.travel_mode:
+    xp = st.session_state.experience
+    level = get_level_and_progress(xp)[0]
+
     unlocked_locations = {
         name: data for name, data in FishingLocations.items()
-        if st.session_state.experience >= data.get("min_exp", 0)
+        if level >= data.get("min_exp", 0)
     }
 
-    if unlocked_locations:
-        if "travel_select" not in st.session_state:
+    if not unlocked_locations:
+        st.info("❌ Thou hast not unlocked any new lands to explore yet!")
+    else:
+        if "travel_select" not in st.session_state or st.session_state.travel_select not in unlocked_locations:
             st.session_state.travel_select = list(unlocked_locations.keys())[0]
 
-        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()),
-                                index=list(unlocked_locations.keys()).index(st.session_state.travel_select),
-                                key="travel_select")
-
-        st.markdown("✈️ Choose thy destination above and press **Travel There** to embark!")
+        selected = st.selectbox(
+            "🌍 Choose thy destination", 
+            list(unlocked_locations.keys()), 
+            index=list(unlocked_locations.keys()).index(st.session_state.travel_select), 
+            key="travel_select"
+        )
 
         if st.button("Travel There"):
             st.session_state.current_location = selected
+            st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
             st.session_state.travel_mode = False
+
+            # Hark! This reruns the app cleanly after travel is set!
             st.experimental_rerun()
-    else:
-        st.write("No unlocked locations yet!")
+
 
 if st.session_state.last_command == "/rod":
     st.markdown("#### 🎯 Switch Bait")
