@@ -404,8 +404,10 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    response = handle_command(prompt)
     st.session_state.last_command = prompt.strip().lower()
+    st.session_state.travel_mode = (st.session_state.last_command == "/travel")
+
+    response = handle_command(prompt)
 
     with st.chat_message("assistant"):
         st.markdown(response)
@@ -419,6 +421,30 @@ if st.session_state.last_command == "/rod":
             st.session_state.current_bait = bait
             st.success(f"🎣 Now using **{bait}**!")
             st.rerun()
+
+if st.session_state.travel_mode:
+    st.markdown("## 🧭 Travel to Another Location")
+    xp = st.session_state.experience
+    unlocked_locations = {
+        name: data for name, data in FishingLocations.items()
+        if xp >= data.get("min_exp", 0)
+    }
+
+    if not unlocked_locations:
+        st.markdown("❌ Thou hast not unlocked any new lands to explore yet!")
+    else:
+        location_names = list(unlocked_locations.keys())
+        selected = st.selectbox("🌍 Choose thy destination", location_names, key="travel_select")
+
+        if st.button("Travel There"):
+            st.session_state.current_location = selected
+            desc = unlocked_locations[selected]["description"]
+            st.session_state.travel_mode = False  # ❄ End travel mode
+            response = f"📍 You travelled to **{selected}**!\n🌊 {desc}"
+            with st.chat_message("assistant"):
+                st.markdown(response)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
 
 if st.session_state.last_command == "/shop":
     rod_cost = 50 * (st.session_state.rod_level + 1)
