@@ -67,15 +67,37 @@ def handle_command(command):
     command = command.strip().lower()
 
     if command == "/travel":
-        return (
-            "**🧭 Available Fishing Locations:**\n"
-            "- `/travel ocean` — 🌊 Vast waters, good balance.\n"
-            "- `/travel reef` — 🪸 Rich in Rare & Epic fish.\n"
-            "- `/travel abyss` — 🕳️ Deep & dangerous... Legendary odds boosted!"
-        )
+        # Dropdown UI for selecting fishing locations
+        st.markdown("## 🧭 Travel to Another Location")
+        xp = st.session_state.experience
+        level, _, _ = get_level_and_progress(xp)
+
+        available_options = []
+        label_map = {}
+
+        for name, loc in FishingLocations.items():
+            min_exp = loc.get("min_exp", 0)
+            if xp >= min_exp:
+                label = name
+                available_options.append(name)
+            else:
+                label = f"{name} [Unlock at {min_exp} EXP]"
+            label_map[label] = name
+
+        # Only unlocked locations go into dropdown
+        unlocked_labels = [label for label in label_map if "[Unlock at" not in label]
+        if not unlocked_labels:
+            return "❌ You haven't unlocked any locations yet!"
+
+        selected_label = st.selectbox("🌍 Select a Location", unlocked_labels)
+
+        if selected_label:
+            st.session_state.current_location = label_map[selected_label]
+            desc = FishingLocations[st.session_state.current_location]["description"]
+            return f"📍 You travelled to **{selected_label}**!\n🌊 {desc}"
+
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
-        # Find matching key ignoring case:
         matched_loc = None
         for key in FishingLocations:
             if key.lower() == loc_input:
@@ -83,24 +105,14 @@ def handle_command(command):
                 break
 
         if matched_loc:
-            st.session_state.current_location = matched_loc
-            return f"📍 You travelled to **{matched_loc}**!\n🌊 {FishingLocations[matched_loc]['description']}"
+            required = FishingLocations[matched_loc]["min_exp"]
+            if st.session_state.experience >= required:
+                st.session_state.current_location = matched_loc
+                return f"📍 You travelled to **{matched_loc}**!\n🌊 {FishingLocations[matched_loc]['description']}"
+            else:
+                return f"🔒 That location is locked! Requires **{required} EXP** to unlock."
         else:
             return "❌ Unknown location. Try `/travel` to see options."
-        
-    elif command == "/location":
-        current = st.session_state.current_location
-        if current in FishingLocations:
-            desc = FishingLocations[current]["description"]
-            mods = FishingLocations[current]["modifiers"]
-            mod_lines = "\n".join(f"- {rarity}: ×{value}" for rarity, value in mods.items())
-            return (
-                f"📍 **Current Location: {current}**\n"
-                f"🌊 {desc}\n\n"
-                f"🎯 **Rarity Modifiers:**\n{mod_lines}"
-            )
-        else:
-            return "Thou art adrift, in an unknown place... 🌫️"
 
     if command == "/help":
         return (
@@ -378,7 +390,7 @@ if "treasure_boosts" not in st.session_state:
 if "last_command" not in st.session_state:
     st.session_state.last_command = ""
 if "current_location" not in st.session_state:
-    st.session_state.current_location = "Ocean"
+    st.session_state.current_location = "Crystal Shoals"  # 🧭 Must match FishingLocations key
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
