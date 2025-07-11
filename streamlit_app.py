@@ -456,8 +456,6 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
-
 if st.session_state.travel_mode:
     xp = st.session_state.experience
     level = get_level_and_progress(xp)[0]
