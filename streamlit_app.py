@@ -88,7 +88,7 @@ def handle_command(command):
 
         xp_gain = 1
         if "xp_bonus" in st.session_state.treasure_boosts:
-            xp_gain = int(xp_gain * 1.5)
+            xp_gain = int(round(xp_gain * 1.5))
 
         st.session_state.experience += xp_gain
         st.session_state.bait_inventory[bait] -= 1
@@ -149,7 +149,7 @@ def handle_command(command):
 
             xp_gain = 1
             if "xp_bonus" in st.session_state.treasure_boosts:
-                xp_gain = int(xp_gain * 1.5)
+                xp_gain = int(round(xp_gain * 1.5))
 
             st.session_state.experience += xp_gain
             st.session_state.bait_inventory[bait] -= 1
