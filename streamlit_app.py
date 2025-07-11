@@ -79,7 +79,7 @@ def handle_command(command):
             return "❌ Thou hast not unlocked any new lands to explore yet!"
         
         # Return nothing, so no duplicate message
-        return ""
+        return "✈️ Choose thy destination above and press **Travel There** to embark!"
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
