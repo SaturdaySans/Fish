@@ -67,38 +67,28 @@ def handle_command(command):
     command = command.strip().lower()
 
     if command == "/travel":
-        # Dropdown UI for selecting fishing locations
         st.markdown("## 🧭 Travel to Another Location")
         xp = st.session_state.experience
         level, _, _ = get_level_and_progress(xp)
 
-        available_options = []
-        label_map = {}
+        # Only show unlocked locations in dropdown
+        unlocked_locations = {
+            name: data for name, data in FishingLocations.items()
+            if xp >= data.get("min_exp", 0)
+        }
 
-        for name, loc in FishingLocations.items():
-            min_exp = loc.get("min_exp", 0)
-            if xp >= min_exp:
-                label = name
-                available_options.append(name)
-            else:
-                label = f"{name} [Unlock at {min_exp} EXP]"
-            label_map[label] = name
+        if not unlocked_locations:
+            return "❌ Thou hast not unlocked any new lands to explore yet!"
 
-        # Only unlocked locations go into dropdown
-        label_map = {name: name for name, loc in FishingLocations.items() if xp >= loc.get("min_exp", 0)}
-
-        if not label_map:
-            return "❌ You haven't unlocked any locations yet!"
-
-        selected_label = st.selectbox("🌍 Select a Location", list(label_map.keys()))
+        location_names = list(unlocked_locations.keys())
+        selected = st.selectbox("🌍 Choose thy destination", location_names)
 
         if st.button("Travel There"):
-            st.session_state.current_location = label_map[selected_label]
-            desc = FishingLocations[st.session_state.current_location]["description"]
-            st.success(f"📍 You travelled to **{selected_label}**!")
-            return f"📍 You travelled to **{selected_label}**!\n🌊 {desc}"
+            st.session_state.current_location = selected
+            desc = unlocked_locations[selected]["description"]
+            return f"📍 You travelled to **{selected}**!\n🌊 {desc}"
 
-        return "✈️ Choose thy destination above and press 'Travel There' to embark on a new aquatic journey!"
+        return "✈️ Choose thy destination above and press 'Travel There' to embark!"
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
