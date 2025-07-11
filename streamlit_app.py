@@ -77,9 +77,7 @@ def handle_command(command):
 
         if not unlocked_locations:
             return "❌ Thou hast not unlocked any new lands to explore yet!"
-        
-        # Return nothing, so no duplicate message
-        return ""
+
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
