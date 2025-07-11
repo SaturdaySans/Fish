@@ -6,10 +6,10 @@ from fish_data import FishPool, BaitEffects, FishingLocations
 st.title("🐟 Fishing Simulator")
 
 BaitPrices = {
-    "Worm Bait": 10,
-    "Rock Bait": 5,
-    "Salt Bait": 25,
-    "Golden Bait": 50
+    "Worm Bait": 2,
+    "Rock Bait": 1,
+    "Salt Bait": 5,
+    "Golden Bait": 10
 }
 
 TreasureBoosts = {
@@ -442,11 +442,12 @@ if st.session_state.last_command == "/shop":
             else:
                 st.error("Too poor!")
 
-    st.markdown("#### 🪱 Buy Bait")
+    st.markdown("#### 🪱 Quick Buy: 5x Each Bait")
     for bait, price in BaitPrices.items():
-        if st.button(f"Buy 5 × {bait} ({price} Fincoins)"):
-            if st.session_state.money >= price:
-                st.session_state.money -= price
+        total_price = price * 5
+        if st.button(f"Buy 5 × {bait} ({total_price} Fincoins)", key=f"quickbuy_{bait}"):
+            if st.session_state.money >= total_price:
+                st.session_state.money -= total_price
                 st.session_state.bait_inventory[bait] = st.session_state.bait_inventory.get(bait, 0) + 5
                 st.success(f"Bought 5 × {bait}!")
             else:
