@@ -136,7 +136,7 @@ def handle_command(command):
 
         results = []
         xp_total = 0  # ✅ Sum raw XP gains
-        for _ in range(10):
+        for _ in range(100):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
@@ -388,7 +388,7 @@ if st.session_state.last_command == "/shop":
                 st.success(f"Bought {qty} × {bait}!")
             else:
                 st.error("Too poor!")
-                
+
     st.markdown("#### 🪱 Buy Bait")
     for bait, price in BaitPrices.items():
         if st.button(f"Buy 5 × {bait} ({price} Fincoins)"):
