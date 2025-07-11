@@ -430,20 +430,18 @@ if st.session_state.travel_mode:
             st.session_state.travel_select not in unlocked_locations):
             st.session_state.travel_select = list(unlocked_locations.keys())[0]
 
-        selected = st.selectbox(
+        selected = st.radio(
             "🌍 Choose thy destination",
             list(unlocked_locations.keys()),
             index=list(unlocked_locations.keys()).index(st.session_state.travel_select),
             key="travel_select"
         )
 
-        # The sacred moment: only rerun on button press!
         if st.button("Travel There"):
             st.session_state.current_location = selected
             st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
             st.session_state.travel_mode = False
 
-            # This rerun must be here, inside the button press event only!
             st.experimental_rerun()
 
 
