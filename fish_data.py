@@ -102,20 +102,20 @@ FishingLocations = {
             "Mythical": 0.4,
             "Treasure": 0.3
         },
-        "min_exp": 6
+        "min_exp": 8
     },
-    "Ethereal Spire": {
-        "description": "Deep & dangerous... Legendary odds boosted!",
+    "Frostbite Cove": {
+        "description": "Icy cove with chilling waters; epic and rare fish brave the cold.",
         "modifiers": {
-            "Common": 0.1,
-            "Uncommon": 0.5,
-            "Rare": 0.8,
-            "Epic": 1.5,
-            "Legendary": 2.0,
-            "Mythical": 3.0,
-            "Treasure": 2.0
+            "Common": 0.4,
+            "Uncommon": 0.9,
+            "Rare": 1.5,
+            "Epic": 1.7,
+            "Legendary": 1.8,
+            "Mythical": 1.5,
+            "Treasure": 1.2
         },
-        "min_exp": 21
+        "min_exp": 19
     },
     # New Locations unlocked by experience
     "Crystal Lagoon": {
@@ -129,8 +129,22 @@ FishingLocations = {
             "Mythical": 2.5,
             "Treasure": 1.0
         },
-        "min_exp": 17
+        "min_exp": 34
     },
+    "Ethereal Spire": {
+        "description": "Deep & dangerous... Legendary odds boosted!",
+        "modifiers": {
+            "Common": 0.1,
+            "Uncommon": 0.5,
+            "Rare": 0.8,
+            "Epic": 1.5,
+            "Legendary": 2.0,
+            "Mythical": 3.0,
+            "Treasure": 2.0
+        },
+        "min_exp": 42
+    },
+    
     "Sunken Ruins": {
         "description": "Ancient ruins beneath the waves, home to rare treasures and fish of legend.",
         "modifiers": {
@@ -142,19 +156,7 @@ FishingLocations = {
             "Mythical": 2.0,
             "Treasure": 3.0
         },
-        "min_exp": 24
-    },
-    "Frostbite Cove": {
-        "description": "Icy cove with chilling waters; epic and rare fish brave the cold.",
-        "modifiers": {
-            "Common": 0.4,
-            "Uncommon": 0.9,
-            "Rare": 1.5,
-            "Epic": 1.7,
-            "Legendary": 1.8,
-            "Mythical": 1.5,
-            "Treasure": 1.2
-        },
-        "min_exp": 12
+        "min_exp": 52
     }
+
 }
