@@ -80,6 +80,20 @@ def handle_command(command):
             return f"📍 You travelled to **{loc}**!\n🌊 {FishingLocations[loc]['description']}"
         else:
             return "❌ Unknown location. Try `/travel` to see options."
+        
+    elif command == "/location":
+        current = st.session_state.current_location
+        if current in FishingLocations:
+            desc = FishingLocations[current]["description"]
+            mods = FishingLocations[current]["modifiers"]
+            mod_lines = "\n".join(f"- {rarity}: ×{value}" for rarity, value in mods.items())
+            return (
+                f"📍 **Current Location: {current}**\n"
+                f"🌊 {desc}\n\n"
+                f"🎯 **Rarity Modifiers:**\n{mod_lines}"
+            )
+        else:
+            return "Thou art adrift, in an unknown place... 🌫️"
 
     if command == "/help":
         return (
@@ -93,9 +107,9 @@ def handle_command(command):
             "- `/shop` — Upgrade rod / Buy bait 🎣\n"
             "- `/rod` — Stats & Switch bait 🎯\n"
             "- `/dictionary` — Fish discovered 📖\n"
-            "- `/help` — This guide"
             "- `/treasure` — See your treasure boosts 🧭\n"
-            "- `/travel` — Travel the seas 🌊\n"
+            "- `/travel` — View & change fishing location 🧳\n"
+            "- `/location` — See where you are & its effects 🌍"
         )
 
     if command == "/fish":
