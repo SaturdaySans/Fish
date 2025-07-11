@@ -129,7 +129,7 @@ FishingLocations = {
             "Mythical": 2.5,
             "Treasure": 1.0
         },
-        "min_exp": 34
+        "min_exp": 32
     },
     "Ethereal Spire": {
         "description": "Deep & dangerous... Legendary odds boosted!",
@@ -142,7 +142,7 @@ FishingLocations = {
             "Mythical": 3.0,
             "Treasure": 2.0
         },
-        "min_exp": 42
+        "min_exp": 43
     },
     
     "Sunken Ruins": {
@@ -156,7 +156,7 @@ FishingLocations = {
             "Mythical": 2.0,
             "Treasure": 3.0
         },
-        "min_exp": 52
+        "min_exp": 58
     }
 
 }
