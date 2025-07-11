@@ -74,10 +74,17 @@ def handle_command(command):
             "- `/travel abyss` — 🕳️ Deep & dangerous... Legendary odds boosted!"
         )
     elif command.startswith("/travel "):
-        loc = command.split(" ", 1)[1].capitalize()
-        if loc in FishingLocations:
-            st.session_state.current_location = loc
-            return f"📍 You travelled to **{loc}**!\n🌊 {FishingLocations[loc]['description']}"
+        loc_input = command.split(" ", 1)[1].strip().lower()
+        # Find matching key ignoring case:
+        matched_loc = None
+        for key in FishingLocations:
+            if key.lower() == loc_input:
+                matched_loc = key
+                break
+
+        if matched_loc:
+            st.session_state.current_location = matched_loc
+            return f"📍 You travelled to **{matched_loc}**!\n🌊 {FishingLocations[matched_loc]['description']}"
         else:
             return "❌ Unknown location. Try `/travel` to see options."
         

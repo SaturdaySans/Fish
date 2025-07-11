@@ -79,6 +79,7 @@ BaitEffects = {
 
 FishingLocations = {
     "ocean": {
+        "description": "Vast waters, good balance.",
         "modifiers": {
             "Common": 1.2,
             "Uncommon": 1.1,
@@ -90,6 +91,7 @@ FishingLocations = {
         }
     },
     "reef": {
+        "description": "Rich in Rare & Epic fish.",
         "modifiers": {
             "Common": 0.6,
             "Uncommon": 1.0,
@@ -101,6 +103,7 @@ FishingLocations = {
         }
     },
     "abyss": {
+        "description": "Deep & dangerous... Legendary odds boosted!",
         "modifiers": {
             "Common": 0.1,
             "Uncommon": 0.5,
