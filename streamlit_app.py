@@ -438,7 +438,7 @@ if st.session_state.travel_mode:
         location_names = list(unlocked_locations.keys())
         selected = st.selectbox("🌍 Choose thy destination", location_names, key="travel_select")
 
-        if st.button("Travel There"):
+        if st.button(f"Travel to {selected}", key=f"travel_{selected}"):
             st.session_state.current_location = selected
             desc = unlocked_locations[selected]["description"]
             st.session_state.travel_mode = False  # ❄ End travel mode
