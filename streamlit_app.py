@@ -225,6 +225,34 @@ def handle_command(command):
             response += f"- **{info['rarity']} {name}** × {info['count']}\n"
         return response
 
+    elif command == "/treasure":
+        boosts = st.session_state.treasure_boosts
+        if not boosts:
+            return "🔍 Thou possesseth no treasures yet... Seek the abyss!"
+
+        treasure_names = {
+            "sell_bonus": "Ancient Pearl",
+            "rod_bonus": "Lost King’s Crown",
+            "xp_bonus": "Sunken Map Fragment",
+            "common_reduction": "Enchanted Compass"
+        }
+
+        descriptions = {
+            "sell_bonus": "+20% more Fincoins from selling fish",
+            "rod_bonus": "+5 bonus rod levels when fishing",
+            "xp_bonus": "+50% XP gain from each catch",
+            "common_reduction": "-30% chance of catching Common fish"
+        }
+
+        response = "**🧭 Active Treasures:**\n"
+        for key in boosts:
+            if key in treasure_names:
+                name = treasure_names[key]
+                desc = descriptions[key]
+                response += f"- 🌟 **{name}** → {desc}\n"
+        return response
+
+
     elif command == "/rod":
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
         bait = st.session_state.current_bait
