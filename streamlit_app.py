@@ -232,3 +232,15 @@ if "treasure_boosts" not in st.session_state:
     st.session_state.treasure_boosts = {}
 if "last_command" not in st.session_state:
     st.session_state.last
+
+
+# ✅ Chat loop stays alive!
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]): st.markdown(m["content"])
+
+if prompt := st.chat_input("Type command..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"): st.markdown(prompt)
+    response = handle_command(prompt)
+    with st.chat_message("assistant"): st.markdown(response)
+    st.session_state.messages.append({"role": "assistant", "content": response})
