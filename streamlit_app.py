@@ -426,23 +426,26 @@ if st.session_state.travel_mode:
     if not unlocked_locations:
         st.info("❌ Thou hast not unlocked any new lands to explore yet!")
     else:
-        if "travel_select" not in st.session_state or st.session_state.travel_select not in unlocked_locations:
+        if ("travel_select" not in st.session_state or
+            st.session_state.travel_select not in unlocked_locations):
             st.session_state.travel_select = list(unlocked_locations.keys())[0]
 
         selected = st.selectbox(
-            "🌍 Choose thy destination", 
-            list(unlocked_locations.keys()), 
-            index=list(unlocked_locations.keys()).index(st.session_state.travel_select), 
+            "🌍 Choose thy destination",
+            list(unlocked_locations.keys()),
+            index=list(unlocked_locations.keys()).index(st.session_state.travel_select),
             key="travel_select"
         )
 
+        # The sacred moment: only rerun on button press!
         if st.button("Travel There"):
             st.session_state.current_location = selected
             st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
             st.session_state.travel_mode = False
 
-            # Hark! This reruns the app cleanly after travel is set!
+            # This rerun must be here, inside the button press event only!
             st.experimental_rerun()
+
 
 
 if st.session_state.last_command == "/rod":
