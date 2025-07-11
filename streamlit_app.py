@@ -75,6 +75,7 @@ def handle_command(command):
             "- `/rod` — Stats & Switch bait 🎯\n"
             "- `/dictionary` — Fish discovered 📖\n"
             "- `/help` — This guide"
+            "- `/treasure` — See your treasure boosts 🧭\n"
         )
 
     elif command == "/fish":
