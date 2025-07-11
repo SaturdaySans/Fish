@@ -64,10 +64,10 @@ FishPool = [
     {"name": "Infinity Lanternfish", "rarity": "Mythical", "weight": 0.1, "reward": 500},
 
     # ✨ Treasure
-    {"name": "Ancient Pearl", "rarity": "Treasure", "weight": 0.05, "reward": 1000},
-    {"name": "Lost King’s Crown", "rarity": "Treasure", "weight": 0.02, "reward": 1100},
-    {"name": "Sunken Map Fragment", "rarity": "Treasure", "weight": 0.03, "reward": 900},
-    {"name": "Enchanted Compass", "rarity": "Treasure", "weight": 0.02, "reward": 1050}
+    {"name": "Ancient Pearl", "rarity": "Treasure", "weight": 0.05, "reward": 900},
+    {"name": "Lost King’s Crown", "rarity": "Treasure", "weight": 0.02, "reward": 1050},
+    {"name": "Sunken Map Fragment", "rarity": "Treasure", "weight": 0.03, "reward": 950},
+    {"name": "Enchanted Compass", "rarity": "Treasure", "weight": 0.02, "reward": 1150}
 ]
 
 BaitEffects = {

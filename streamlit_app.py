@@ -376,6 +376,21 @@ if st.session_state.last_command == "/shop":
 
     st.markdown("#### 🪱 Buy Bait")
     for bait, price in BaitPrices.items():
+        qty = st.slider(
+            f"Select quantity for {bait} ({price} Fincoins each)",
+            min_value=1, max_value=100, key=f"slider_{bait}"
+        )
+        if st.button(f"Buy {qty} × {bait} ({price * qty} Fincoins)", key=f"buy_button_{bait}"):
+            total_price = price * qty
+            if st.session_state.money >= total_price:
+                st.session_state.money -= total_price
+                st.session_state.bait_inventory[bait] = st.session_state.bait_inventory.get(bait, 0) + qty
+                st.success(f"Bought {qty} × {bait}!")
+            else:
+                st.error("Too poor!")
+                
+    st.markdown("#### 🪱 Buy Bait")
+    for bait, price in BaitPrices.items():
         if st.button(f"Buy 5 × {bait} ({price} Fincoins)"):
             if st.session_state.money >= price:
                 st.session_state.money -= price
