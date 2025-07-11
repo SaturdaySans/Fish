@@ -92,11 +92,13 @@ def handle_command(command):
 
         selected_label = st.selectbox("🌍 Select a Location", list(label_map.keys()))
 
-        if selected_label:
+        if st.button("Travel There"):
             st.session_state.current_location = label_map[selected_label]
             desc = FishingLocations[st.session_state.current_location]["description"]
             st.success(f"📍 You travelled to **{selected_label}**!")
-            st.rerun()
+            return f"📍 You travelled to **{selected_label}**!\n🌊 {desc}"
+
+        return "✈️ Choose thy destination above and press 'Travel There' to embark on a new aquatic journey!"
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
