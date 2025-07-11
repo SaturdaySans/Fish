@@ -415,28 +415,25 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
     st.session_state.messages.append({"role": "assistant", "content": response})
 
 if st.session_state.travel_mode:
-    xp = st.session_state.experience
-    level = get_level_and_progress(xp)[0]
-
     unlocked_locations = {
         name: data for name, data in FishingLocations.items()
-        if level >= data.get("min_exp", 0)
+        if st.session_state.experience >= data.get("min_exp", 0)
     }
 
     if unlocked_locations:
         if "travel_select" not in st.session_state:
             st.session_state.travel_select = list(unlocked_locations.keys())[0]
 
-        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), 
-                                index=list(unlocked_locations.keys()).index(st.session_state.travel_select), 
+        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()),
+                                index=list(unlocked_locations.keys()).index(st.session_state.travel_select),
                                 key="travel_select")
 
         st.markdown("✈️ Choose thy destination above and press **Travel There** to embark!")
-        
+
         if st.button("Travel There"):
             st.session_state.current_location = selected
-            st.session_state.travel_mode = False  # turn off travel UI after traveling
-            st.experimental_rerun()
+            st.session_state.travel_mode = False
+            st.experimental_rerun()  # This line is safe here: inside a button press
 
 
 if st.session_state.last_command == "/rod":
