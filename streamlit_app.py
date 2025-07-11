@@ -102,11 +102,55 @@ def handle_command(command):
     elif command == "/location":
         loc = st.session_state.current_location
         data = FishingLocations.get(loc)
-        if data:
-            desc = data.get("description", "No description")
-            return f"📍 **Current Location:** {loc}\n🌊 {desc}"
-        else:
+        if not data:
             return "❓ Unknown location!"
+
+        desc = data.get("description", "No description")
+
+        # Gather all parameters for fish rarity weights
+        xp = st.session_state.experience
+        level, _, _ = get_level_and_progress(xp)
+        rod_level = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
+        bait = st.session_state.current_bait
+        bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
+        location_mod = data.get("modifiers", {})
+
+        rarity_totals = {r: 0 for r in BaitEffects["Worm Bait"]}
+
+        for fish in FishPool:
+            rarity = fish["rarity"]
+            base = fish["weight"]
+            bonus = rod_level * 0.015
+            rarity_bonus = bait_effect.get(rarity, 1.0)
+            location_bonus = location_mod.get(rarity, 1.0)
+
+            if rarity == "Common":
+                reduction = st.session_state.treasure_boosts.get("common_reduction", 0)
+                common_factor = max(1.0 - (level * 0.02 + rod_level * 0.03 + reduction), 0.05)
+                adjusted = base * common_factor * rarity_bonus * location_bonus
+            elif rarity == "Treasure":
+                scale = 0.05
+                adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
+            else:
+                scale = {
+                    "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
+                    "Legendary": 0.03, "Mythical": 0.04
+                }[rarity]
+                adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
+
+            rarity_totals[rarity] += adjusted
+
+        total = sum(rarity_totals.values())
+        rarity_chances_str = "\n".join(
+            f"- **{r}**: {(rarity_totals[r] / total) * 100:.2f}%" for r in rarity_totals
+        )
+
+        return (
+            f"📍 **Current Location:** {loc}\n"
+            f"🌊 {desc}\n\n"
+            f"**🎣 Fish Rarity Chances Here:**\n{rarity_chances_str}"
+        )
+
 
     if command == "/help":
         return (
