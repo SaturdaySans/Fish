@@ -54,6 +54,6 @@ FishPool = [
 BaitEffects = {
     "Worm Bait":    {"Common": 1.0, "Uncommon": 1.0, "Rare": 1.0, "Epic": 1.0, "Legendary": 1.0, "Mythical": 1.0},
     "Rock Bait":    {"Common": 1.3, "Uncommon": 0.9, "Rare": 0.8, "Epic": 0.5, "Legendary": 0.3, "Mythical": 0.1},
-    "Salt Bait":    {"Common": 0.8, "Uncommon": 1.3, "Rare": 1.2, "Epic": 1.0, "Legendary": 0.9, "Mythical": 0.5},
+    "Salt Bait":    {"Common": 0.8, "Uncommon": 1.3, "Rare": 1.2, "Epic": 1.2, "Legendary": 1.1, "Mythical": 1.1},
     "Golden Bait":  {"Common": 0.5, "Uncommon": 0.8, "Rare": 1.1, "Epic": 1.5, "Legendary": 2.0, "Mythical": 3.0},
 }
