@@ -12,6 +12,13 @@ BaitPrices = {
     "Golden Bait": 50
 }
 
+TreasureBoosts = {
+    "Ancient Pearl": "sell_bonus",
+    "Lost King’s Crown": "rod_bonus",
+    "Sunken Map Fragment": "xp_bonus",
+    "Enchanted Compass": "common_reduction"
+}
+
 def get_level_and_progress(experience):
     level = int(experience ** 0.5)
     next_level_xp = (level + 1) ** 2
@@ -23,7 +30,7 @@ def get_level_and_progress(experience):
 def go_fishing():
     xp = st.session_state.experience
     level, _, _ = get_level_and_progress(xp)
-    rod_level = st.session_state.rod_level
+    rod_level = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
     bait = st.session_state.current_bait
     bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
 
@@ -32,9 +39,14 @@ def go_fishing():
         rarity = f["rarity"]
         base = f["weight"]
         bonus = rod_level * 0.015
-        rarity_bonus = bait_effect[rarity]
+        rarity_bonus = bait_effect.get(rarity, 1.0)
+
         if rarity == "Common":
-            adjusted = base * max(1.0 - (level * 0.02 + rod_level * 0.03), 0.1) * rarity_bonus
+            reduction = st.session_state.treasure_boosts.get("common_reduction", 0)
+            common_factor = max(1.0 - (level * 0.02 + rod_level * 0.03 + reduction), 0.05)
+            adjusted = base * common_factor * rarity_bonus
+        elif rarity == "Treasure":
+            adjusted = base * rarity_bonus
         else:
             scale = {
                 "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
@@ -72,7 +84,12 @@ def handle_command(command):
             return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
 
         catch = go_fishing()
-        st.session_state.experience += 1
+
+        xp_gain = 1
+        if "xp_bonus" in st.session_state.treasure_boosts:
+            xp_gain = int(xp_gain * 1.5)
+
+        st.session_state.experience += xp_gain
         st.session_state.bait_inventory[bait] -= 1
 
         rarity = catch["rarity"]
@@ -82,21 +99,39 @@ def handle_command(command):
             "Rare": (1.5, 2.0),
             "Epic": (2.0, 2.5),
             "Legendary": (2.5, 3.0),
-            "Mythical": (3.0, 3.5)
+            "Mythical": (3.0, 3.5),
+            "Treasure": (4.0, 5.0)
         }
         time.sleep(random.uniform(*delay_map[rarity]))
 
         name = catch["name"]
-        if name in st.session_state.inventory:
-            st.session_state.inventory[name]["count"] += 1
-        else:
-            st.session_state.inventory[name] = {"rarity": catch["rarity"], "count": 1}
         st.session_state.dictionary.add(name)
 
-        return (
-            f"You caught a **{catch['rarity']} {name}**! 🐟\n"
-            f"✨ +1 XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
-        )
+        if rarity == "Treasure":
+            if TreasureBoosts[name] not in st.session_state.treasure_boosts:
+                if TreasureBoosts[name] == "sell_bonus":
+                    st.session_state.treasure_boosts["sell_bonus"] = 0.2
+                elif TreasureBoosts[name] == "rod_bonus":
+                    st.session_state.treasure_boosts["rod_bonus"] = 5
+                elif TreasureBoosts[name] == "xp_bonus":
+                    st.session_state.treasure_boosts["xp_bonus"] = True
+                elif TreasureBoosts[name] == "common_reduction":
+                    st.session_state.treasure_boosts["common_reduction"] = 0.3
+
+            return (
+                f"🌟 You found a **Treasure: {name}**! It grants you a permanent boost! 🎁\n"
+                f"✨ +{xp_gain} XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
+            )
+        else:
+            if name in st.session_state.inventory:
+                st.session_state.inventory[name]["count"] += 1
+            else:
+                st.session_state.inventory[name] = {"rarity": catch["rarity"], "count": 1}
+
+            return (
+                f"You caught a **{catch['rarity']} {name}**! 🐟\n"
+                f"✨ +{xp_gain} XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
+            )
 
     elif command == "/autofish":
         bait = st.session_state.current_bait
@@ -109,79 +144,47 @@ def handle_command(command):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
-            xp = st.session_state.experience
-            level, _, _ = get_level_and_progress(xp)
-            rod_level = st.session_state.rod_level
-            bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
+            catch = go_fishing()
 
-            adjusted_weights = []
-            for f in FishPool:
-                rarity = f["rarity"]
-                base = f["weight"]
-                bonus = rod_level * 0.015
-                rarity_bonus = bait_effect[rarity]
+            xp_gain = 1
+            if "xp_bonus" in st.session_state.treasure_boosts:
+                xp_gain = int(xp_gain * 1.5)
 
-                if rarity == "Common":
-                    adj = base * max(1.0 - (level * 0.02 + rod_level * 0.03), 0.1) * rarity_bonus
-                else:
-                    scale = {
-                        "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
-                        "Legendary": 0.03, "Mythical": 0.04
-                    }[rarity]
-                    adj = base * (1.0 + level * scale + bonus) * rarity_bonus * 0.5
-                adjusted_weights.append(adj)
-
-            names = [f["name"] for f in FishPool]
-            chosen_name = random.choices(names, weights=adjusted_weights, k=1)[0]
-            fish = next(f for f in FishPool if f["name"] == chosen_name)
-
-            st.session_state.experience += 1
+            st.session_state.experience += xp_gain
             st.session_state.bait_inventory[bait] -= 1
 
-            if fish["name"] in st.session_state.inventory:
-                st.session_state.inventory[fish["name"]]["count"] += 1
-            else:
-                st.session_state.inventory[fish["name"]] = {"rarity": fish["rarity"], "count": 1}
-            st.session_state.dictionary.add(fish["name"])
+            name = catch["name"]
+            st.session_state.dictionary.add(name)
 
-            results.append(f"- **{fish['rarity']} {fish['name']}**")
+            if catch["rarity"] == "Treasure":
+                if TreasureBoosts[name] not in st.session_state.treasure_boosts:
+                    if TreasureBoosts[name] == "sell_bonus":
+                        st.session_state.treasure_boosts["sell_bonus"] = 0.2
+                    elif TreasureBoosts[name] == "rod_bonus":
+                        st.session_state.treasure_boosts["rod_bonus"] = 5
+                    elif TreasureBoosts[name] == "xp_bonus":
+                        st.session_state.treasure_boosts["xp_bonus"] = True
+                    elif TreasureBoosts[name] == "common_reduction":
+                        st.session_state.treasure_boosts["common_reduction"] = 0.3
+                results.append(f"- 🌟 Treasure: **{name}**")
+            else:
+                if name in st.session_state.inventory:
+                    st.session_state.inventory[name]["count"] += 1
+                else:
+                    st.session_state.inventory[name] = {"rarity": catch["rarity"], "count": 1}
+                results.append(f"- **{catch['rarity']} {name}**")
 
         return (
             f"🤖 You auto-fished:\n" + "\n".join(results) +
             f"\n✨ +{len(results)} XP | 🪱 -{len(results)} {bait} ({st.session_state.bait_inventory[bait]} left)"
         )
 
-    elif command == "/money":
-        return f"You have **{st.session_state.money} Fincoins**. 💰"
-
-    elif command == "/experience":
-        xp = st.session_state.experience
-        level, progress, needed = get_level_and_progress(xp)
-        sell_bonus = int(level * 2)
-
-        st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
-        st.progress(progress / needed)
-        return (
-            f"**Your Fishing Experience:**\n"
-            f"- 🎣 **Level:** {level} (XP: {xp})\n"
-            f"- 📈 **Sell Bonus:** +{sell_bonus}% profit on fish sales\n"
-            f"- 🐟 **Catch Bonus:** More chance for rarer fish\n"
-            f"- 🔓 Level up by fishing to earn more Fincoins!"
-        )
-
-    elif command == "/inventory":
-        if not st.session_state.inventory:
-            return "Your basket is empty!"
-        response = "**Your Inventory:**\n"
-        for name, info in st.session_state.inventory.items():
-            response += f"- **{info['rarity']} {name}** × {info['count']}\n"
-        return response
-
     elif command == "/sell":
         if not st.session_state.inventory:
             return "No fish to sell!"
+
         level, _, _ = get_level_and_progress(st.session_state.experience)
-        sell_bonus = 1 + (level * 0.02)
+        sell_bonus = 1 + (level * 0.02) + st.session_state.treasure_boosts.get("sell_bonus", 0)
 
         total = 0
         summary = "**You sold your fish:**\n"
@@ -196,8 +199,34 @@ def handle_command(command):
         st.session_state.inventory = {}
         return summary + f"\n💰 **Total:** {total} Fincoins! (+{int((sell_bonus-1)*100)}% bonus)"
 
+    elif command == "/money":
+        return f"You have **{st.session_state.money} Fincoins**. 💰"
+
+    elif command == "/experience":
+        xp = st.session_state.experience
+        level, progress, needed = get_level_and_progress(xp)
+        sell_bonus = int(level * 2) + int(st.session_state.treasure_boosts.get("sell_bonus", 0) * 100)
+
+        st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
+        st.progress(progress / needed)
+        return (
+            f"**Your Fishing Experience:**\n"
+            f"- 🎣 **Level:** {level} (XP: {xp})\n"
+            f"- 📈 **Sell Bonus:** +{sell_bonus}% profit\n"
+            f"- ⚙️ **Rod Bonus:** +{st.session_state.treasure_boosts.get('rod_bonus', 0)} levels\n"
+            f"- 📖 **Treasures Discovered:** {len(st.session_state.treasure_boosts)} boosts active"
+        )
+
+    elif command == "/inventory":
+        if not st.session_state.inventory:
+            return "Your basket is empty!"
+        response = "**Your Inventory:**\n"
+        for name, info in st.session_state.inventory.items():
+            response += f"- **{info['rarity']} {name}** × {info['count']}\n"
+        return response
+
     elif command == "/rod":
-        rod = st.session_state.rod_level
+        rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
         bait = st.session_state.current_bait
         bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
 
@@ -211,13 +240,15 @@ def handle_command(command):
             bonus = rod * 0.015
             bait_bonus = bait_effect[rarity]
             if rarity == "Common":
-                adj = base * max(1.0 - (level * 0.02 + rod * 0.03), 0.1) * bait_bonus
+                reduction = st.session_state.treasure_boosts.get("common_reduction", 0)
+                adj = base * max(1.0 - (level * 0.02 + rod * 0.03 + reduction), 0.05) * bait_bonus
             else:
-                scale = {
-                    "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
-                    "Legendary": 0.03, "Mythical": 0.04
-                }[rarity]
-                adj = base * (1.0 + level * scale + bonus) * bait_bonus
+                if rarity == "Treasure":
+                    adj = base * bait_bonus
+                else:
+                    scale = {"Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
+                             "Legendary": 0.03, "Mythical": 0.04}[rarity]
+                    adj = base * (1.0 + level * scale + bonus) * bait_bonus
             rarity_totals[rarity] += adj
 
         total = sum(rarity_totals.values())
@@ -276,6 +307,8 @@ if "current_bait" not in st.session_state:
     st.session_state.current_bait = "Worm Bait"
 if "dictionary" not in st.session_state:
     st.session_state.dictionary = set()
+if "treasure_boosts" not in st.session_state:
+    st.session_state.treasure_boosts = {}
 if "last_command" not in st.session_state:
     st.session_state.last_command = ""
 
