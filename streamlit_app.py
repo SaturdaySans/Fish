@@ -394,6 +394,8 @@ if "last_command" not in st.session_state:
     st.session_state.last_command = ""
 if "current_location" not in st.session_state:
     st.session_state.current_location = "Crystal Shoals"  # 🧭 Must match FishingLocations key
+if "travel_mode" not in st.session_state:
+    st.session_state.travel_mode = False
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
