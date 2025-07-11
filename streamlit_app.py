@@ -46,13 +46,15 @@ def go_fishing():
             common_factor = max(1.0 - (level * 0.02 + rod_level * 0.03 + reduction), 0.05)
             adjusted = base * common_factor * rarity_bonus
         elif rarity == "Treasure":
-            adjusted = base * rarity_bonus
+            scale = 0.05  # 📿 New: Apply scaling for treasures too!
+            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus
         else:
             scale = {
                 "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
                 "Legendary": 0.03, "Mythical": 0.04
             }[rarity]
             adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus
+
         adjusted_weights.append(adjusted)
 
     names = [f["name"] for f in FishPool]
