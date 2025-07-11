@@ -442,7 +442,6 @@ if st.session_state.travel_mode:
             st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
             st.session_state.travel_mode = False
 
-            st.experimental_rerun()
 
 
 
