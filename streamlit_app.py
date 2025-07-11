@@ -69,14 +69,14 @@ def handle_command(command):
     if command == "/travel":
         st.markdown("## 🧭 Travel to Another Location")
         xp = st.session_state.experience
-
         unlocked_locations = {
             name: data for name, data in FishingLocations.items()
-            if xp >= data.get("min_exp", 0)
+            if get_level_and_progress(xp)[0] >= data.get("min_exp", 0)  # level-based unlock
         }
 
         if not unlocked_locations:
-            return "❌ Thou hast not unlocked any new lands to explore yet!"
+            st.write("❌ Thou hast not unlocked any new lands to explore yet!")
+            return ""
 
         # Initialize session state for travel selection if not present
         if "travel_select" not in st.session_state:
@@ -85,12 +85,13 @@ def handle_command(command):
         # Show dropdown with saved selection
         selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), index=list(unlocked_locations.keys()).index(st.session_state.travel_select), key="travel_select")
 
+        # Travel button
         if st.button("Travel There"):
             st.session_state.current_location = selected
-            desc = unlocked_locations[selected]["description"]
-            return f"📍 You travelled to **{selected}**!\n🌊 {desc}"
+            st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
 
-        return "✈️ Choose thy destination above and press 'Travel There' to embark!"
+        # Return empty string or None so no "replace all UI" string is shown
+        return ""
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
