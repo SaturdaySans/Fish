@@ -78,7 +78,7 @@ BaitEffects = {
 }
 
 FishingLocations = {
-    "Crystal Shoals": {
+    "ocean": {
         "modifiers": {
             "Common": 1.2,
             "Uncommon": 1.1,
@@ -89,7 +89,7 @@ FishingLocations = {
             "Treasure": 0.05
         }
     },
-    "Midnight Trench": {
+    "reef": {
         "modifiers": {
             "Common": 0.6,
             "Uncommon": 1.0,
@@ -100,7 +100,7 @@ FishingLocations = {
             "Treasure": 0.3
         }
     },
-    "Ethereal Spire": {
+    "abyss": {
         "modifiers": {
             "Common": 0.1,
             "Uncommon": 0.5,
