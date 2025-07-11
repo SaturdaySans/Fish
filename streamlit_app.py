@@ -136,7 +136,7 @@ def handle_command(command):
 
         results = []
         xp_total = 0  # ✅ Sum raw XP gains
-        for _ in range(100):
+        for _ in range(25):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
