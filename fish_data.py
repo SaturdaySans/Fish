@@ -76,3 +76,39 @@ BaitEffects = {
     "Salt Bait":    {"Common": 0.8, "Uncommon": 1.3, "Rare": 1.2, "Epic": 1.2, "Legendary": 1.1, "Mythical": 1.1, "Treasure": 0.5},
     "Golden Bait":  {"Common": 0.5, "Uncommon": 0.8, "Rare": 1.1, "Epic": 1.5, "Legendary": 2.0, "Mythical": 3.0, "Treasure": 2.0},
 }
+
+FishingLocations = {
+    "Crystal Shoals": {
+        "modifiers": {
+            "Common": 1.2,
+            "Uncommon": 1.1,
+            "Rare": 0.9,
+            "Epic": 0.7,
+            "Legendary": 0.5,
+            "Mythical": 0.2,
+            "Treasure": 0.05
+        }
+    },
+    "Midnight Trench": {
+        "modifiers": {
+            "Common": 0.6,
+            "Uncommon": 1.0,
+            "Rare": 1.3,
+            "Epic": 1.2,
+            "Legendary": 1.0,
+            "Mythical": 0.4,
+            "Treasure": 0.3
+        }
+    },
+    "Ethereal Spire": {
+        "modifiers": {
+            "Common": 0.1,
+            "Uncommon": 0.5,
+            "Rare": 0.8,
+            "Epic": 1.5,
+            "Legendary": 2.0,
+            "Mythical": 3.0,
+            "Treasure": 2.0
+        }
+    }
+}

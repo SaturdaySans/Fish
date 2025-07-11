@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-from fish_data import FishPool, BaitEffects
+from fish_data import FishPool, BaitEffects, FishingLocations
 
 st.title("🐟 Fishing Simulator")
 
@@ -33,6 +33,7 @@ def go_fishing():
     rod_level = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
     bait = st.session_state.current_bait
     bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
+    location_mod = FishingLocations.get(st.session_state.current_location, {}).get("modifiers", {})
 
     adjusted_weights = []
     for f in FishPool:
@@ -40,20 +41,21 @@ def go_fishing():
         base = f["weight"]
         bonus = rod_level * 0.015
         rarity_bonus = bait_effect.get(rarity, 1.0)
+        location_bonus = location_mod.get(rarity, 1.0)
 
         if rarity == "Common":
             reduction = st.session_state.treasure_boosts.get("common_reduction", 0)
             common_factor = max(1.0 - (level * 0.02 + rod_level * 0.03 + reduction), 0.05)
-            adjusted = base * common_factor * rarity_bonus
+            adjusted = base * common_factor * rarity_bonus * location_bonus
         elif rarity == "Treasure":
-            scale = 0.05  # 📿 New: Apply scaling for treasures too!
-            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus
+            scale = 0.05
+            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
         else:
             scale = {
                 "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
                 "Legendary": 0.03, "Mythical": 0.04
             }[rarity]
-            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus
+            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
 
         adjusted_weights.append(adjusted)
 
@@ -63,6 +65,21 @@ def go_fishing():
 
 def handle_command(command):
     command = command.strip().lower()
+
+    if command == "/travel":
+        return (
+            "**🧭 Available Fishing Locations:**\n"
+            "- `/travel ocean` — 🌊 Vast waters, good balance.\n"
+            "- `/travel reef` — 🪸 Rich in Rare & Epic fish.\n"
+            "- `/travel abyss` — 🕳️ Deep & dangerous... Legendary odds boosted!"
+        )
+    elif command.startswith("/travel "):
+        loc = command.split(" ", 1)[1].capitalize()
+        if loc in FishingLocations:
+            st.session_state.current_location = loc
+            return f"📍 You travelled to **{loc}**!\n🌊 {FishingLocations[loc]['description']}"
+        else:
+            return "❌ Unknown location. Try `/travel` to see options."
 
     if command == "/help":
         return (
@@ -78,6 +95,7 @@ def handle_command(command):
             "- `/dictionary` — Fish discovered 📖\n"
             "- `/help` — This guide"
             "- `/treasure` — See your treasure boosts 🧭\n"
+            "- `/travel` — Travel the seas 🌊\n"
         )
 
     if command == "/fish":
@@ -338,12 +356,14 @@ if "treasure_boosts" not in st.session_state:
     st.session_state.treasure_boosts = {}
 if "last_command" not in st.session_state:
     st.session_state.last_command = ""
+if "current_location" not in st.session_state:
+    st.session_state.current_location = "Ocean"
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Type /fish, /rod, /shop, etc."):
+if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
