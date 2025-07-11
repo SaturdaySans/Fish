@@ -67,31 +67,19 @@ def handle_command(command):
     command = command.strip().lower()
 
     if command == "/travel":
-        st.markdown("## 🧭 Travel to Another Location")
         xp = st.session_state.experience
+        level = get_level_and_progress(xp)[0]
+
         unlocked_locations = {
             name: data for name, data in FishingLocations.items()
-            if get_level_and_progress(xp)[0] >= data.get("min_exp", 0)  # level-based unlock
+            if level >= data.get("min_exp", 0)
         }
 
         if not unlocked_locations:
-            st.write("❌ Thou hast not unlocked any new lands to explore yet!")
-            return ""
-
-        # Initialize session state for travel selection if not present
-        if "travel_select" not in st.session_state:
-            st.session_state.travel_select = list(unlocked_locations.keys())[0]
-
-        # Show dropdown with saved selection
-        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), index=list(unlocked_locations.keys()).index(st.session_state.travel_select), key="travel_select")
-
-        # Travel button
-        if st.button("Travel There"):
-            st.session_state.current_location = selected
-            st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
-
-        # Return empty string or None so no "replace all UI" string is shown
-        return ""
+            return "❌ Thou hast not unlocked any new lands to explore yet!"
+        
+        # Just a message, no UI widgets here
+        return "✈️ Choose thy destination above and press 'Travel There' to embark!"
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
@@ -410,7 +398,11 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
         st.markdown(prompt)
 
     st.session_state.last_command = prompt.strip().lower()
-    st.session_state.travel_mode = (st.session_state.last_command == "/travel")
+    # If the command is /travel, enable travel mode UI
+    if st.session_state.last_command == "/travel":
+        st.session_state.travel_mode = True
+    else:
+        st.session_state.travel_mode = False
 
     response = handle_command(prompt)
 
@@ -418,6 +410,32 @@ if prompt := st.chat_input("Type /fish, /rod, /shop, /travel, etc."):
         st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
+
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+if st.session_state.travel_mode:
+    xp = st.session_state.experience
+    level = get_level_and_progress(xp)[0]
+
+    unlocked_locations = {
+        name: data for name, data in FishingLocations.items()
+        if level >= data.get("min_exp", 0)
+    }
+
+    if not unlocked_locations:
+        st.info("❌ Thou hast not unlocked any new lands to explore yet!")
+    else:
+        if "travel_select" not in st.session_state or st.session_state.travel_select not in unlocked_locations:
+            st.session_state.travel_select = list(unlocked_locations.keys())[0]
+
+        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), index=list(unlocked_locations.keys()).index(st.session_state.travel_select), key="travel_select")
+
+        if st.button("Travel There"):
+            st.session_state.current_location = selected
+            st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
+            # Disable travel mode after travel to keep UI stable
+            st.session_state.travel_mode = False
 
 if st.session_state.last_command == "/rod":
     st.markdown("#### 🎯 Switch Bait")
