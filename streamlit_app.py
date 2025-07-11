@@ -117,13 +117,13 @@ def handle_command(command):
             return "❌ Unknown location. Try `/travel` to see options."
     
     elif command == "/location":
-    loc = st.session_state.current_location
-    data = FishingLocations.get(loc)
-    if data:
-        desc = data.get("description", "No description")
-        return f"📍 **Current Location:** {loc}\n🌊 {desc}"
-    else:
-        return "❓ Unknown location!"
+        loc = st.session_state.current_location
+        data = FishingLocations.get(loc)
+        if data:
+            desc = data.get("description", "No description")
+            return f"📍 **Current Location:** {loc}\n🌊 {desc}"
+        else:
+            return "❓ Unknown location!"
 
     if command == "/help":
         return (
