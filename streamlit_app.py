@@ -141,7 +141,7 @@ def handle_command(command):
             return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
 
         results = []
-        for _ in range(5):
+        for _ in range(10):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
