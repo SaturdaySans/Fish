@@ -78,8 +78,8 @@ def handle_command(command):
         if not unlocked_locations:
             return "❌ Thou hast not unlocked any new lands to explore yet!"
         
-        # Just a message, no UI widgets here
-        return "✈️ Choose thy destination above and press 'Travel There' to embark!"
+        # Return nothing, so no duplicate message
+        return ""
 
     elif command.startswith("/travel "):
         loc_input = command.split(" ", 1)[1].strip().lower()
@@ -423,19 +423,21 @@ if st.session_state.travel_mode:
         if level >= data.get("min_exp", 0)
     }
 
-    if not unlocked_locations:
-        st.info("❌ Thou hast not unlocked any new lands to explore yet!")
-    else:
-        if "travel_select" not in st.session_state or st.session_state.travel_select not in unlocked_locations:
+    if unlocked_locations:
+        if "travel_select" not in st.session_state:
             st.session_state.travel_select = list(unlocked_locations.keys())[0]
 
-        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), index=list(unlocked_locations.keys()).index(st.session_state.travel_select), key="travel_select")
+        selected = st.selectbox("🌍 Choose thy destination", list(unlocked_locations.keys()), 
+                                index=list(unlocked_locations.keys()).index(st.session_state.travel_select), 
+                                key="travel_select")
 
+        st.markdown("✈️ Choose thy destination above and press **Travel There** to embark!")
+        
         if st.button("Travel There"):
             st.session_state.current_location = selected
-            st.success(f"📍 You travelled to **{selected}**!\n🌊 {unlocked_locations[selected]['description']}")
-            # Disable travel mode after travel to keep UI stable
-            st.session_state.travel_mode = False
+            st.session_state.travel_mode = False  # turn off travel UI after traveling
+            st.experimental_rerun()
+
 
 if st.session_state.last_command == "/rod":
     st.markdown("#### 🎯 Switch Bait")
