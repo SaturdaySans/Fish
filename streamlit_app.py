@@ -433,8 +433,9 @@ if st.session_state.travel_mode:
         if st.button("Travel There"):
             st.session_state.current_location = selected
             st.session_state.travel_mode = False
-            st.experimental_rerun()  # This line is safe here: inside a button press
-
+            st.experimental_rerun()
+    else:
+        st.write("No unlocked locations yet!")
 
 if st.session_state.last_command == "/rod":
     st.markdown("#### 🎯 Switch Bait")
