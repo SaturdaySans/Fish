@@ -299,7 +299,7 @@ def handle_command(command):
         timer_placeholder = st.empty()
         progress_bar = st.progress(0)
 
-        for i in range(25):
+        for i in range(100):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
