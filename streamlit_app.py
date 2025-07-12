@@ -357,14 +357,24 @@ def handle_command(command):
             "sell_bonus": "Ancient Pearl",
             "rod_bonus": "Lost King’s Crown",
             "xp_bonus": "Sunken Map Fragment",
-            "common_reduction": "Enchanted Compass"
+            "common_reduction": "Enchanted Compass",
+            "auto_xp_bonus": "Seer's Spiral Shell",
+            "bait_preserve": "Oracle’s Eyestone",
+            "mythical_boost": "Soulbound Hook",
+            "double_fish": "Tidecaller Relic",
+            "coin_multiplier": "Gilded Chalice"
         }
 
         descriptions = {
             "sell_bonus": "+20% more Fincoins from selling fish",
             "rod_bonus": "+5 bonus rod levels when fishing",
             "xp_bonus": "+50% XP gain from each catch",
-            "common_reduction": "-30% chance of catching Common fish"
+            "common_reduction": "-30% chance of catching Common fish",
+            "auto_xp_bonus": "+50% XP on auto-fishing",
+            "bait_preserve": "20% chance to not consume bait",
+            "mythical_boost": "+30% chance to catch Mythical fish",
+            "double_fish": "10% chance to catch 2 fish",
+            "coin_multiplier": "+X% more base coin rewards from fish"
         }
 
         response = "**🧭 Active Treasures:**\n"
