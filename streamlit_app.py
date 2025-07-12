@@ -361,13 +361,33 @@ def handle_command(command):
 
         st.markdown(f"**Level {level}** — {progress}/{needed} XP to next level ✨")
         st.progress(progress / needed)
+
+        unlocked = []
+        locked = []
+
+        for name, data in FishingLocations.items():
+            min_exp = data.get("min_exp", 0)
+            if level >= min_exp:
+                unlocked.append(f"✅ {name}")
+            else:
+                locked.append(f"🔒 {name} — Unlocks at Level {min_exp}")
+
+        loc_info = (
+            f"**📍 Locations Unlocked:**\n" + "\n".join(unlocked) if unlocked else "None unlocked yet."
+        )
+        lock_info = (
+            f"\n\n**🔓 Future Locations:**\n" + "\n".join(locked) if locked else ""
+        )
+
         return (
             f"**Your Fishing Experience:**\n"
             f"- 🎣 **Level:** {level} (XP: {xp})\n"
             f"- 📈 **Sell Bonus:** +{sell_bonus}% profit\n"
             f"- ⚙️ **Rod Bonus:** +{st.session_state.treasure_boosts.get('rod_bonus', 0)} levels\n"
-            f"- 📖 **Treasures Discovered:** {len(st.session_state.treasure_boosts)} boosts active"
+            f"- 📖 **Treasures Discovered:** {len(st.session_state.treasure_boosts)} boosts active\n\n"
+            f"{loc_info}{lock_info}"
         )
+
 
     elif command == "/inventory":
         if not st.session_state.inventory:
