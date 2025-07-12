@@ -24,13 +24,11 @@ TreasureBoosts = {
     "Gilded Chalice": "coin_multiplier"
 }
 
-def get_level_and_progress(experience):
-    level = int(experience ** 0.5)
-    next_level_xp = (level + 1) ** 2
-    current_level_xp = level ** 2
-    progress = experience - current_level_xp
-    needed = next_level_xp - current_level_xp
-    return level, progress, needed
+def get_level_and_progress(exp: int):
+    lvl = int(exp ** 0.5)
+    nxt = (lvl + 1) ** 2
+    cur = lvl ** 2
+    return lvl, exp - cur, nxt - cur
 
 def get_boosted_reward(base):
     boost = st.session_state.treasure_boosts.get("coin_multiplier", 0)
@@ -41,53 +39,39 @@ def consume_bait(bait):
     if not preserve or random.random() > 0.2:
         st.session_state.bait_inventory[bait] -= 1
 
-def go_fishing():
-    xp = st.session_state.experience
-    level, _, _ = get_level_and_progress(xp)
+def compute_adjusted_weights():
+    lvl, *_ = get_level_and_progress(st.session_state.experience)
     rod_level = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
     bait = st.session_state.current_bait
-    bait_effect = BaitEffects.get(bait, BaitEffects["Worm Bait"])
-    location_mod = FishingLocations.get(st.session_state.current_location, {}).get("modifiers", {})
+    bait_eff = BaitEffects.get(bait, BaitEffects["Worm Bait"])
+    loc_mod = FishingLocations[st.session_state.current_location]["modifiers"]
 
-    adjusted_weights = []
-    for f in FishPool:
-        rarity = f["rarity"]
-        base = f["weight"]
-        bonus = rod_level * 0.015
-        rarity_bonus = bait_effect.get(rarity, 1.0)
-        location_bonus = location_mod.get(rarity, 1.0)
-
-        if rarity == "Common":
-            reduction = st.session_state.treasure_boosts.get("common_reduction", 0)
-            common_factor = max(1.0 - (level * 0.02 + rod_level * 0.03 + reduction), 0.05)
-            adjusted = base * common_factor * rarity_bonus * location_bonus
-        elif rarity == "Treasure":
-            scale = 0.05
-            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
+    adj = []
+    for fish in FishPool:
+        r, base = fish["rarity"], fish["weight"]
+        bonus = rod_level * 0.03  # ⭐️ doubled impact
+        rb, lm = bait_eff.get(r, 1), loc_mod.get(r, 1)
+        if r == "Common":
+            red = st.session_state.treasure_boosts.get("common_reduction", 0)
+            common_factor = max(1.0 - (lvl * 0.02 + rod_level * 0.06 + red), 0.05)
+            adj.append(base * common_factor * rb * lm)
+        elif r == "Treasure":
+            adj.append(base * (1 + lvl * 0.05 + bonus) * rb * lm)
         else:
-            scale = {
-                "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
-                "Legendary": 0.03, "Mythical": 0.04
-            }[rarity]
-
-            # Apply mythical boost
-            if rarity == "Mythical" and "mythical_boost" in st.session_state.treasure_boosts:
+            scale = {"Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025, "Legendary": 0.03, "Mythical": 0.04}[r]
+            if r == "Mythical" and "mythical_boost" in st.session_state.treasure_boosts:
                 scale += 0.3
+            adj.append(base * (1 + lvl * scale + bonus) * rb * lm)
+    return adj
 
-            adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
 
-        adjusted_weights.append(adjusted)
-
-    names = [f["name"] for f in FishPool]
-    chosen_name = random.choices(names, weights=adjusted_weights, k=1)[0]
-
-    result = next(f for f in FishPool if f["name"] == chosen_name)
-
-    # Double catch effect
+def go_fishing():
+    weights = compute_adjusted_weights()
+    choice = random.choices([f["name"] for f in FishPool], weights=weights, k=1)[0]
+    result = next(f for f in FishPool if f["name"] == choice)
     if "double_fish" in st.session_state.treasure_boosts and random.random() < 0.10:
         return [result, result]
-    else:
-        return [result]
+    return [result]
 
 def handle_command(command):
     command = command.strip().lower()
@@ -590,12 +574,12 @@ if st.session_state.last_command == "/rod":
             st.rerun()
 
 if st.session_state.last_command == "/shop":
-    rod_cost = 50 * (st.session_state.rod_level + 1)
-    if st.button(f"Upgrade Rod Lv.{st.session_state.rod_level} → Lv.{st.session_state.rod_level+1} ({rod_cost} Fincoins)"):
-        if st.session_state.money >= rod_cost:
-            st.session_state.money -= rod_cost
+    cost = 100 * (st.session_state.rod_level + 1) ** 2
+    if st.button(f"Upgrade Rod Lv.{st.session_state.rod_level} → Lv.{st.session_state.rod_level + 1} ({cost} Fincoins)"):
+        if st.session_state.money >= cost:
+            st.session_state.money -= cost
             st.session_state.rod_level += 1
-            st.success("🔧 Rod upgraded!")
+            st.success("🔧 Rod upgraded! Your power increases!")
         else:
             st.error("Too poor!")
 
