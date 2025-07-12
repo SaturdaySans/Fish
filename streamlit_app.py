@@ -291,20 +291,29 @@ def handle_command(command):
         level = get_level_and_progress(st.session_state.experience)[0]
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
 
-        base_cast_time = 1.0  # seconds per fish if manual fishing
+        base_cast_time = 1.0  # seconds for manual fish
         speed_mult = max(0.2, 1 - (level * 0.01 + rod * 0.02))
-        autofish_delay = (base_cast_time * 0.5) * speed_mult  # half the base, adjusted by level and rod
+        autofish_delay = (base_cast_time * 0.5) * speed_mult  # half base, adjusted
 
-        for _ in range(25):
+        # Create placeholders for timer display and progress bar
+        timer_placeholder = st.empty()
+        progress_bar = st.progress(0)
+
+        for i in range(25):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
-            # wait before catching fish (simulate fishing time)
-            time.sleep(autofish_delay)
+            # Animate countdown timer
+            steps = 20
+            for step in range(steps + 1):
+                remaining = autofish_delay * (steps - step) / steps
+                timer_placeholder.markdown(f"🤖 Auto-fishing fish #{i+1}/25: ⏳ {remaining:.2f} seconds remaining")
+                progress_bar.progress(step / steps)
+                time.sleep(autofish_delay / steps)
 
             catch = go_fishing()
 
-            # determine XP per fish
+            # XP per fish logic
             xp_gain = 1
             if "auto_xp_bonus" in st.session_state.treasure_boosts:
                 xp_gain += 0.5
@@ -353,11 +362,15 @@ def handle_command(command):
 
         st.session_state.experience += xp_total
         bait_left = st.session_state.bait_inventory[bait]
+
+        # Clear timer and progress bar after autofishing completes
+        timer_placeholder.empty()
+        progress_bar.empty()
+
         return (
             f"🤖 You auto-fished:\n" + "\n".join(results) +
             f"\n✨ +{xp_total} XP | 🪱 Remaining {bait}: {bait_left}"
         )
-
 
     elif command == "/sell":
         if not st.session_state.inventory:
