@@ -293,7 +293,7 @@ def handle_command(command):
 
         base_cast_time = 1.0  # seconds for manual fish
         speed_mult = max(0.2, 1 - (level * 0.01 + rod * 0.02))
-        autofish_delay = (base_cast_time * 0.5) * speed_mult  # half base, adjusted
+        autofish_delay = (base_cast_time * 2) * speed_mult  # changed to twice base time
 
         # Create placeholders for timer display and progress bar
         timer_placeholder = st.empty()
@@ -303,7 +303,6 @@ def handle_command(command):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
-            # Animate countdown timer
             steps = 20
             for step in range(steps + 1):
                 remaining = autofish_delay * (steps - step) / steps
@@ -313,7 +312,6 @@ def handle_command(command):
 
             catch = go_fishing()
 
-            # XP per fish logic
             xp_gain = 1
             if "auto_xp_bonus" in st.session_state.treasure_boosts:
                 xp_gain += 0.5
@@ -363,7 +361,6 @@ def handle_command(command):
         st.session_state.experience += xp_total
         bait_left = st.session_state.bait_inventory[bait]
 
-        # Clear timer and progress bar after autofishing completes
         timer_placeholder.empty()
         progress_bar.empty()
 
@@ -371,6 +368,7 @@ def handle_command(command):
             f"🤖 You auto-fished:\n" + "\n".join(results) +
             f"\n✨ +{xp_total} XP | 🪱 Remaining {bait}: {bait_left}"
         )
+
 
     elif command == "/sell":
         if not st.session_state.inventory:
