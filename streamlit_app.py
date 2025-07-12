@@ -634,7 +634,7 @@ if st.session_state.last_command == "/rod":
             st.rerun()
 
 if st.session_state.last_command == "/shop":
-    cost = round((100 * (st.session_state.rod_level + 1) ** 1.02))
+    cost = round((100 * (st.session_state.rod_level + 1) ** 1.05))
     if st.button(f"Upgrade Rod Lv.{st.session_state.rod_level} → Lv.{st.session_state.rod_level + 1} ({cost} Fincoins)"):
         if st.session_state.money >= cost:
             st.session_state.money -= cost
