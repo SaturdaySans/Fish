@@ -292,7 +292,7 @@ def handle_command(command):
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
 
         base_cast_time = 1.0  # seconds for manual fish
-        speed_mult = max((1 + (level * 0.005 + rod * 0.01)),0.01)
+        speed_mult = max((1 - (level * 0.005 + rod * 0.01)),0.01)
         autofish_delay = (base_cast_time * 1) * speed_mult  # changed to twice base time
 
         # Create placeholders for timer display and progress bar
@@ -312,7 +312,7 @@ def handle_command(command):
                 # Show fish being caught (first fish if double)
                 fish_name = catch[0]["name"] if catch else "Unknown"
                 timer_placeholder.markdown(
-                    f"🤖 Auto-fishing fish #{i+1}/100: **{fish_name}** 🎣 ⏳ {remaining:.2f} seconds remaining"
+                    f"🤖 Auto-fishing fish #{i+1}: **{fish_name}** 🎣 ⏳ {remaining:.2f} seconds remaining"
                 )
                 progress_bar.progress(step / steps)
                 time.sleep(autofish_delay / steps)
