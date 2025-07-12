@@ -85,3 +85,93 @@ FishPool = [
 ]
 
 # BaitEffects and FishingLocations remain unchanged...
+BaitEffects = {
+    "Worm Bait":    {"Common": 1.0, "Uncommon": 1.0, "Rare": 1.0, "Epic": 1.0, "Legendary": 1.0, "Mythical": 1.0, "Treasure": 1.0},
+    "Rock Bait":    {"Common": 1.3, "Uncommon": 0.9, "Rare": 0.8, "Epic": 0.5, "Legendary": 0.3, "Mythical": 0.1, "Treasure": 0.05},
+    "Salt Bait":    {"Common": 0.8, "Uncommon": 1.3, "Rare": 1.2, "Epic": 1.2, "Legendary": 1.1, "Mythical": 1.1, "Treasure": 0.5},
+    "Golden Bait":  {"Common": 0.5, "Uncommon": 0.8, "Rare": 1.1, "Epic": 1.5, "Legendary": 2.0, "Mythical": 3.0, "Treasure": 2.0},
+}
+
+FishingLocations = {
+    "Crystal Shoals": {
+        "description": "Vast waters, good balance.",
+        "modifiers": {
+            "Common": 1.2,
+            "Uncommon": 1.1,
+            "Rare": 0.9,
+            "Epic": 0.7,
+            "Legendary": 0.5,
+            "Mythical": 0.2,
+            "Treasure": 0.05
+        },
+        "min_exp": 0
+    },
+    "Midnight Trench": {
+        "description": "Rich in Rare & Epic fish.",
+        "modifiers": {
+            "Common": 0.6,
+            "Uncommon": 1.0,
+            "Rare": 1.3,
+            "Epic": 1.2,
+            "Legendary": 1.0,
+            "Mythical": 0.4,
+            "Treasure": 0.3
+        },
+        "min_exp": 8
+    },
+    "Frostbite Cove": {
+        "description": "Icy cove with chilling waters; epic and rare fish brave the cold.",
+        "modifiers": {
+            "Common": 0.4,
+            "Uncommon": 0.9,
+            "Rare": 1.5,
+            "Epic": 1.7,
+            "Legendary": 1.8,
+            "Mythical": 1.5,
+            "Treasure": 1.2
+        },
+        "min_exp": 19
+    },
+    # New Locations unlocked by experience
+    "Crystal Lagoon": {
+        "description": "Shimmering waters where Mythical fish dwell, shimmering like stars.",
+        "modifiers": {
+            "Common": 0.3,
+            "Uncommon": 0.7,
+            "Rare": 1.0,
+            "Epic": 1.2,
+            "Legendary": 1.5,
+            "Mythical": 2.5,
+            "Treasure": 1.0
+        },
+        "min_exp": 32
+    },
+    "Ethereal Spire": {
+        "description": "Deep & dangerous... Legendary odds boosted!",
+        "modifiers": {
+            "Common": 0.1,
+            "Uncommon": 0.5,
+            "Rare": 0.8,
+            "Epic": 1.5,
+            "Legendary": 2.0,
+            "Mythical": 3.0,
+            "Treasure": 2.0
+        },
+        "min_exp": 43
+    },
+    
+    "Sunken Ruins": {
+        "description": "Ancient ruins beneath the waves, home to rare treasures and fish of legend.",
+        "modifiers": {
+            "Common": 0.2,
+            "Uncommon": 0.8,
+            "Rare": 1.4,
+            "Epic": 1.6,
+            "Legendary": 2.2,
+            "Mythical": 2.0,
+            "Treasure": 3.0
+        },
+        "min_exp": 58
+    }
+
+}
