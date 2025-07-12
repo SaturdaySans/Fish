@@ -132,7 +132,6 @@ FishingLocations = {
         },
         "min_exp": 19
     },
-    # New Locations unlocked by experience
     "Crystal Lagoon": {
         "description": "Shimmering waters where Mythical fish dwell, shimmering like stars.",
         "modifiers": {
@@ -159,7 +158,6 @@ FishingLocations = {
         },
         "min_exp": 43
     },
-    
     "Sunken Ruins": {
         "description": "Ancient ruins beneath the waves, home to rare treasures and fish of legend.",
         "modifiers": {
@@ -172,6 +170,44 @@ FishingLocations = {
             "Treasure": 3.0
         },
         "min_exp": 58
+    },
+    "Azure Labyrinth": {
+        "description": "A sunken maze of coral and reef, fish here are swift and elusive.",
+        "modifiers": {
+            "Common": 0.2,
+            "Uncommon": 0.7,
+            "Rare": 1.2,
+            "Epic": 1.6,
+            "Legendary": 1.5,
+            "Mythical": 2.5,
+            "Treasure": 2.0
+        },
+        "min_exp": 70
+    },
+    "Starlit Abyss": {
+        "description": "Where moonlight dies, starlight awakens. Mythical fish are drawn to its silence.",
+        "modifiers": {
+            "Common": 0.1,
+            "Uncommon": 0.4,
+            "Rare": 1.0,
+            "Epic": 1.4,
+            "Legendary": 1.8,
+            "Mythical": 3.5,
+            "Treasure": 2.5
+        },
+        "min_exp": 88
+    },
+    "Whispering Mire": {
+        "description": "A haunted swamp where echoes of old treasure drift.",
+        "modifiers": {
+            "Common": 0.5,
+            "Uncommon": 0.9,
+            "Rare": 1.3,
+            "Epic": 1.0,
+            "Legendary": 1.6,
+            "Mythical": 1.0,
+            "Treasure": 3.5
+        },
+        "min_exp": 100
     }
-
 }
