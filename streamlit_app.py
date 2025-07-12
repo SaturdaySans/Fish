@@ -201,80 +201,95 @@ def handle_command(command):
         if bait_count <= 0:
             return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
 
-        catch = go_fishing()
+        catch = go_fishing()          # 👉 returns a *list* of 1 or 2 fish dicts
 
-        # ❗ FIXED XP BONUS LOGIC
+        # ❗ XP BONUS LOGIC
         xp_gain = 1
         if "xp_bonus" in st.session_state.treasure_boosts:
-            xp_gain += 0.5  # +50%
+            xp_gain += 0.5            # +50 %
 
         st.session_state.experience += xp_gain
+        consume_bait(bait)            # (uses bait_preserve internally)
+
+        # ────────────────────────────────────────────────────────────────
+        # 🔧  PATCHED SECTION  •  handles 1‑or‑2 fish correctly
+        # ────────────────────────────────────────────────────────────────
+        messages = []                 # collect lines for the return message
+
+        for fish in catch:
+            name   = fish["name"]
+            rarity = fish["rarity"]
+            st.session_state.dictionary.add(name)
+
+            if rarity == "Treasure":
+                # apply treasure once per unique treasure
+                if TreasureBoosts[name] not in st.session_state.treasure_boosts:
+                    effect = TreasureBoosts[name]
+                    if effect == "sell_bonus":
+                        st.session_state.treasure_boosts["sell_bonus"] = 0.2
+                    elif effect == "rod_bonus":
+                        st.session_state.treasure_boosts["rod_bonus"] = 5
+                    elif effect == "xp_bonus":
+                        st.session_state.treasure_boosts["xp_bonus"] = True
+                    elif effect == "common_reduction":
+                        st.session_state.treasure_boosts["common_reduction"] = 0.3
+                    elif effect == "auto_xp_bonus":
+                        st.session_state.treasure_boosts["auto_xp_bonus"] = True
+                    elif effect == "bait_preserve":
+                        st.session_state.treasure_boosts["bait_preserve"] = True
+                    elif effect == "mythical_boost":
+                        st.session_state.treasure_boosts["mythical_boost"] = True
+                    elif effect == "double_fish":
+                        st.session_state.treasure_boosts["double_fish"] = True
+                    elif effect == "coin_multiplier":
+                        st.session_state.treasure_boosts["coin_multiplier"] = 0.25
+                messages.append(f"🌟 Treasure: **{name}** 🎁")
+
+            else:
+                # update inventory counts
+                if name in st.session_state.inventory:
+                    st.session_state.inventory[name]["count"] += 1
+                else:
+                    st.session_state.inventory[name] = {"rarity": rarity, "count": 1}
+                messages.append(f"**{rarity} {name}** 🐟")
+        # ────────────────────────────────────────────────────────────────
+
+        # build a neat response
+        fish_list = ", ".join(messages)
+        return (
+            f"You caught {fish_list}!\n"
+            f"✨ +{xp_gain} XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
+        )
+
+    elif command == "/autofish":
+    bait = st.session_state.current_bait
+    bait_count = st.session_state.bait_inventory.get(bait, 0)
+    if bait_count <= 0:
+        return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
+
+    results = []
+    xp_total = 0
+
+    for _ in range(25):
+        if st.session_state.bait_inventory[bait] <= 0:
+            break
+
+        catch = go_fishing()  # 🔁 list of 1 or 2 fish
+
+        # determine XP per fish
+        xp_gain = 1
+        if "auto_xp_bonus" in st.session_state.treasure_boosts:
+            xp_gain += 0.5
+        if "xp_bonus" in st.session_state.treasure_boosts:
+            xp_gain += 0.5
+
         preserve = "bait_preserve" in st.session_state.treasure_boosts
         if not preserve or random.random() > 0.2:
             st.session_state.bait_inventory[bait] -= 1
 
-        # ... [delay & result logic unchanged] ...
-        name = catch["name"]
-        rarity = catch["rarity"]
-        st.session_state.dictionary.add(name)
-
-        if rarity == "Treasure":
-            if TreasureBoosts[name] not in st.session_state.treasure_boosts:
-                effect = TreasureBoosts[name]
-                if effect == "sell_bonus":
-                    st.session_state.treasure_boosts["sell_bonus"] = 0.2
-                elif effect == "rod_bonus":
-                    st.session_state.treasure_boosts["rod_bonus"] = 5
-                elif effect == "xp_bonus":
-                    st.session_state.treasure_boosts["xp_bonus"] = True
-                elif effect == "common_reduction":
-                    st.session_state.treasure_boosts["common_reduction"] = 0.3
-
-            return (
-                f"🌟 You found a **Treasure: {name}**! It grants you a permanent boost! 🎁\n"
-                f"✨ +{xp_gain} XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
-            )
-        else:
-            if name in st.session_state.inventory:
-                st.session_state.inventory[name]["count"] += 1
-            else:
-                st.session_state.inventory[name] = {"rarity": rarity, "count": 1}
-
-            return (
-                f"You caught a **{rarity} {name}**! 🐟\n"
-                f"✨ +{xp_gain} XP | 🪱 -1 {bait} ({st.session_state.bait_inventory[bait]} left)"
-            )
-
-    elif command == "/autofish":
-        bait = st.session_state.current_bait
-        bait_count = st.session_state.bait_inventory.get(bait, 0)
-        if bait_count <= 0:
-            return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
-
-        results = []
-        xp_total = 0  # ✅ Sum raw XP gains
-        for _ in range(25):
-            if st.session_state.bait_inventory[bait] <= 0:
-                break
-
-            catch = go_fishing()
-
-            if "auto_xp_bonus" in st.session_state.treasure_boosts:
-                xp_gain = 1.5  # Full bonus
-                if "xp_bonus" in st.session_state.treasure_boosts:
-                    xp_gain += 0.75
-            else:
-                xp_gain = 1
-                if "xp_bonus" in st.session_state.treasure_boosts:
-                    xp_gain += 0.5
-
-            xp_total += xp_gain
-            preserve = "bait_preserve" in st.session_state.treasure_boosts
-            if not preserve or random.random() > 0.2:
-                st.session_state.bait_inventory[bait] -= 1
-
-            name = catch["name"]
-            rarity = catch["rarity"]
+        for fish in catch:
+            name = fish["name"]
+            rarity = fish["rarity"]
             st.session_state.dictionary.add(name)
 
             if rarity == "Treasure":
@@ -288,6 +303,16 @@ def handle_command(command):
                         st.session_state.treasure_boosts["xp_bonus"] = True
                     elif effect == "common_reduction":
                         st.session_state.treasure_boosts["common_reduction"] = 0.3
+                    elif effect == "auto_xp_bonus":
+                        st.session_state.treasure_boosts["auto_xp_bonus"] = True
+                    elif effect == "bait_preserve":
+                        st.session_state.treasure_boosts["bait_preserve"] = True
+                    elif effect == "mythical_boost":
+                        st.session_state.treasure_boosts["mythical_boost"] = True
+                    elif effect == "double_fish":
+                        st.session_state.treasure_boosts["double_fish"] = True
+                    elif effect == "coin_multiplier":
+                        st.session_state.treasure_boosts["coin_multiplier"] = 0.25
                 results.append(f"- 🌟 Treasure: **{name}**")
             else:
                 if name in st.session_state.inventory:
@@ -296,11 +321,15 @@ def handle_command(command):
                     st.session_state.inventory[name] = {"rarity": rarity, "count": 1}
                 results.append(f"- **{rarity} {name}**")
 
-        st.session_state.experience += xp_total  # ✅ Total fractional XP applied here
-        return (
-            f"🤖 You auto-fished:\n" + "\n".join(results) +
-            f"\n✨ +{xp_total} XP | 🪱 -{len(results)} {bait} ({st.session_state.bait_inventory[bait]} left)"
-        )
+            xp_total += xp_gain
+
+    st.session_state.experience += xp_total
+    bait_left = st.session_state.bait_inventory[bait]
+    return (
+        f"🤖 You auto-fished:\n" + "\n".join(results) +
+        f"\n✨ +{xp_total} XP | 🪱 Remaining {bait}: {bait_left}"
+    )
+
 
     elif command == "/sell":
         if not st.session_state.inventory:
