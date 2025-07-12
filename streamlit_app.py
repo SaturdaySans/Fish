@@ -292,7 +292,7 @@ def handle_command(command):
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
 
         base_cast_time = 1.0
-        speed_mult = max((1 - (level * 0.005 + rod * 0.005)), 0.005)
+        speed_mult = (1/2) ** ((level+rod)/60)
 
         timer_placeholder = st.empty()
         progress_bar = st.progress(0)
