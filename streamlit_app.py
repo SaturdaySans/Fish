@@ -283,7 +283,7 @@ def handle_command(command):
         bait = st.session_state.current_bait
         bait_count = st.session_state.bait_inventory.get(bait, 0)
         if bait_count <= 0:
-            return f"🪱 You have no **{bait}**! Use `/shop` to buy more."
+            return f"🩱 You have no **{bait}**! Use `/shop` to buy more."
 
         results = []
         xp_total = 0
@@ -291,11 +291,9 @@ def handle_command(command):
         level = get_level_and_progress(st.session_state.experience)[0]
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
 
-        base_cast_time = 1.0  # seconds for manual fish
+        base_cast_time = 1.0
         speed_mult = max((1 - (level * 0.005 + rod * 0.005)), 0.005)
-        autofish_delay = (base_cast_time * 1) * speed_mult  # changed to twice base time
 
-        # Create placeholders for timer display and progress bar
         timer_placeholder = st.empty()
         progress_bar = st.progress(0)
 
@@ -303,19 +301,31 @@ def handle_command(command):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
-            catch = go_fishing()  # Pick fish **before** waiting
+            catch = go_fishing()
+
+            rarity_time_bonus = {
+                "Common": 1.0,
+                "Uncommon": 1.25,
+                "Rare": 1.5,
+                "Epic": 1.75,
+                "Legendary": 2.0,
+                "Mythical": 2.5,
+                "Treasure": 1.5
+            }
+
+            main_rarity = catch[0]["rarity"] if catch else "Common"
+            rarity_factor = rarity_time_bonus.get(main_rarity, 1.0)
+            delay = base_cast_time * speed_mult * rarity_factor
 
             steps = 20
             for step in range(steps + 1):
-                remaining = autofish_delay * (steps - step) / steps
-
-                # Show fish being caught (first fish if double)
+                remaining = delay * (steps - step) / steps
                 fish_name = catch[0]["name"] if catch else "Unknown"
                 timer_placeholder.markdown(
                     f"🤖 Auto-fishing fish #{i+1}: **{fish_name}** 🎣 ⏳ {remaining:.2f} seconds remaining"
                 )
                 progress_bar.progress(step / steps)
-                time.sleep(autofish_delay / steps)
+                time.sleep(delay / steps)
 
             xp_gain = 1
             if "auto_xp_bonus" in st.session_state.treasure_boosts:
@@ -371,7 +381,7 @@ def handle_command(command):
 
         return (
             f"🤖 You auto-fished:\n" + "\n".join(results) +
-            f"\n✨ +{xp_total} XP | 🪱 Remaining {bait}: {bait_left}"
+            f"\n✨ +{xp_total} XP | 🩱 Remaining {bait}: {bait_left}"
         )
 
 
