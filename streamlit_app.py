@@ -292,8 +292,8 @@ def handle_command(command):
         rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
 
         base_cast_time = 1.0  # seconds for manual fish
-        speed_mult = max((1 + (level * 0.01 + rod * 0.02)),0.1)
-        autofish_delay = (base_cast_time * 1) * speed_mult  # changed to twice base time
+        speed_mult = max((1 + (level * 0.01 + rod * 0.02)),0.01)
+        autofish_delay = (base_cast_time * 5) * speed_mult  # changed to twice base time
 
         # Create placeholders for timer display and progress bar
         timer_placeholder = st.empty()
