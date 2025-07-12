@@ -73,6 +73,40 @@ def go_fishing():
         return [result, result]
     return [result]
 
+def autofish_logic():
+    bait=st.session_state.current_bait
+    if st.session_state.bait_inventory.get(bait,0)<=0:
+        return "🪱 You have no **{bait}**! Use `/shop` to buy more."
+
+    results=[]; xp_total=0
+    lvl,_ ,_=get_level_and_progress(st.session_state.experience)
+    rod=st.session_state.rod_level
+    base_cast_time=1.0           # manual single‑/fish baseline (s)
+    cast_time=base_cast_time*0.5 # autofish half‑speed
+    speed_mult=max(0.2,1-(lvl*0.01+rod*0.02)) # ↓ with level & rod
+    wait=cast_time*speed_mult
+
+    for _ in range(25):
+        if st.session_state.bait_inventory[bait]<=0: break
+        catch=go_fishing()
+        # xp per fish
+        xp_gain=1+0.5*("auto_xp_bonus" in st.session_state.treasure_boosts)+0.5*("xp_bonus" in st.session_state.treasure_boosts)
+        consume_bait(bait)
+        for fish in catch:
+            n, r=fish["name"],fish["rarity"]
+            st.session_state.dictionary.add(n)
+            if r=="Treasure":
+                results.append(f"- 🌟 Treasure: **{n}**")
+            else:
+                st.session_state.inventory.setdefault(n,{"rarity":r,"count":0})["count"]+=1
+                results.append(f"- **{r} {n}**")
+            xp_total+=xp_gain
+        st.write(f"⏳ Waiting {wait:.2f}s...")
+        time.sleep(wait)
+
+    st.session_state.experience+=xp_total
+    return ("🤖 You auto‑fished:\n"+"\n".join(results)+f"\n✨ +{xp_total} XP | 🪱 {bait}: {st.session_state.bait_inventory[bait]}")
+
 def handle_command(command):
     command = command.strip().lower()
 
@@ -254,11 +288,21 @@ def handle_command(command):
         results = []
         xp_total = 0
 
+        level = get_level_and_progress(st.session_state.experience)[0]
+        rod = st.session_state.rod_level + st.session_state.treasure_boosts.get("rod_bonus", 0)
+
+        base_cast_time = 1.0  # seconds per fish if manual fishing
+        speed_mult = max(0.2, 1 - (level * 0.01 + rod * 0.02))
+        autofish_delay = (base_cast_time * 0.5) * speed_mult  # half the base, adjusted by level and rod
+
         for _ in range(25):
             if st.session_state.bait_inventory[bait] <= 0:
                 break
 
-            catch = go_fishing()  # 🔁 list of 1 or 2 fish
+            # wait before catching fish (simulate fishing time)
+            time.sleep(autofish_delay)
+
+            catch = go_fishing()
 
             # determine XP per fish
             xp_gain = 1
