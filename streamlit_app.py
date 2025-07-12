@@ -16,7 +16,12 @@ TreasureBoosts = {
     "Ancient Pearl": "sell_bonus",
     "Lost King’s Crown": "rod_bonus",
     "Sunken Map Fragment": "xp_bonus",
-    "Enchanted Compass": "common_reduction"
+    "Enchanted Compass": "common_reduction",
+    "Seer's Spiral Shell": "auto_xp_bonus",
+    "Oracle’s Eyestone": "bait_preserve",
+    "Soulbound Hook": "mythical_boost",
+    "Tidecaller Relic": "double_fish",
+    "Gilded Chalice": "coin_multiplier"
 }
 
 def get_level_and_progress(experience):
@@ -26,6 +31,15 @@ def get_level_and_progress(experience):
     progress = experience - current_level_xp
     needed = next_level_xp - current_level_xp
     return level, progress, needed
+
+def get_boosted_reward(base):
+    boost = st.session_state.treasure_boosts.get("coin_multiplier", 0)
+    return int(base * (1 + boost))
+
+def consume_bait(bait):
+    preserve = "bait_preserve" in st.session_state.treasure_boosts
+    if not preserve or random.random() > 0.2:
+        st.session_state.bait_inventory[bait] -= 1
 
 def go_fishing():
     xp = st.session_state.experience
@@ -55,13 +69,25 @@ def go_fishing():
                 "Uncommon": 0.01, "Rare": 0.02, "Epic": 0.025,
                 "Legendary": 0.03, "Mythical": 0.04
             }[rarity]
+
+            # Apply mythical boost
+            if rarity == "Mythical" and "mythical_boost" in st.session_state.treasure_boosts:
+                scale += 0.3
+
             adjusted = base * (1.0 + level * scale + bonus) * rarity_bonus * location_bonus
 
         adjusted_weights.append(adjusted)
 
     names = [f["name"] for f in FishPool]
     chosen_name = random.choices(names, weights=adjusted_weights, k=1)[0]
-    return next(f for f in FishPool if f["name"] == chosen_name)
+
+    result = next(f for f in FishPool if f["name"] == chosen_name)
+
+    # Double catch effect
+    if "double_fish" in st.session_state.treasure_boosts and random.random() < 0.10:
+        return [result, result]
+    else:
+        return [result]
 
 def handle_command(command):
     command = command.strip().lower()
@@ -183,7 +209,9 @@ def handle_command(command):
             xp_gain += 0.5  # +50%
 
         st.session_state.experience += xp_gain
-        st.session_state.bait_inventory[bait] -= 1
+        preserve = "bait_preserve" in st.session_state.treasure_boosts
+        if not preserve or random.random() > 0.2:
+            st.session_state.bait_inventory[bait] -= 1
 
         # ... [delay & result logic unchanged] ...
         name = catch["name"]
@@ -231,12 +259,19 @@ def handle_command(command):
 
             catch = go_fishing()
 
-            xp_gain = 1
-            if "xp_bonus" in st.session_state.treasure_boosts:
-                xp_gain += 0.5  # ✅ True +50%
+            if "auto_xp_bonus" in st.session_state.treasure_boosts:
+                xp_gain = 1.5  # Full bonus
+                if "xp_bonus" in st.session_state.treasure_boosts:
+                    xp_gain += 0.75
+            else:
+                xp_gain = 1
+                if "xp_bonus" in st.session_state.treasure_boosts:
+                    xp_gain += 0.5
 
             xp_total += xp_gain
-            st.session_state.bait_inventory[bait] -= 1
+            preserve = "bait_preserve" in st.session_state.treasure_boosts
+            if not preserve or random.random() > 0.2:
+                st.session_state.bait_inventory[bait] -= 1
 
             name = catch["name"]
             rarity = catch["rarity"]
