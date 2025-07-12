@@ -293,7 +293,7 @@ def handle_command(command):
 
         base_cast_time = 1.0  # seconds for manual fish
         speed_mult = max((1 + (level * 0.005 + rod * 0.01)),0.01)
-        autofish_delay = (base_cast_time * 5) * speed_mult  # changed to twice base time
+        autofish_delay = (base_cast_time * 1) * speed_mult  # changed to twice base time
 
         # Create placeholders for timer display and progress bar
         timer_placeholder = st.empty()
