@@ -312,7 +312,7 @@ def handle_command(command):
                 # Show fish being caught (first fish if double)
                 fish_name = catch[0]["name"] if catch else "Unknown"
                 timer_placeholder.markdown(
-                    f"🤖 Auto-fishing fish #{i+1}/25: **{fish_name}** 🎣 ⏳ {remaining:.2f} seconds remaining"
+                    f"🤖 Auto-fishing fish #{i+1}/100: **{fish_name}** 🎣 ⏳ {remaining:.2f} seconds remaining"
                 )
                 progress_bar.progress(step / steps)
                 time.sleep(autofish_delay / steps)
